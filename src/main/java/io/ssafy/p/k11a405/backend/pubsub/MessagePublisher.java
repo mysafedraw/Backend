@@ -1,18 +1,15 @@
 package io.ssafy.p.k11a405.backend.pubsub;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ssafy.p.k11a405.backend.dto.ChatMessage;
-import org.springframework.data.redis.core.RedisTemplate;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class MessagePublisher {
 
-    private final RedisTemplate<String, Object> redisTemplate;
-
-    public MessagePublisher(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+    private final StringRedisTemplate redisTemplate;
 
     public void publish(String channel, ChatMessage message) {
         try {
