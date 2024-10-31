@@ -11,4 +11,5 @@ public class AvatarHashTag {
 
     @EmbeddedId
     private AvatarHashTagId id;
+
 }

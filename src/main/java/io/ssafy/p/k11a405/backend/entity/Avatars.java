@@ -18,4 +18,5 @@ public class Avatars {
     private String name;
     private String profileImg;
     private String feature;
+    private String asset;
 }
