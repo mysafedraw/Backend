@@ -2,60 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebSocket Chat Test</title>
+    <title>Room Creation and Entry</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
-<h2>Chat Room</h2>
-<div>
-    <input type="text" id="message" placeholder="Enter your message"/>
-    <button onclick="sendMessage()">Send</button>
+<h2>Create or Join a Room</h2>
+
+<!-- 방 생성 영역 -->
+<div id="room-setup">
+    <input type="text" id="owner-id" placeholder="Enter owner ID" value="ownerUUID5"/>
+    <button onclick="createRoom()">Create and Enter Room</button>
 </div>
-<div id="chat-box"></div>
+
+<!-- 방 유저 리스트 -->
+<div id="room-container" style="display: none;">
+    <h3>Room ID: <span id="room-id"></span></h3>
+    <h4>Users in Room:</h4>
+    <ul id="user-list"></ul>
+</div>
 
 <script>
-    var stompClient = null;
+    let stompClient = null;
+    let roomId = null;
 
-    function connect() {
-        var socket = new SockJS('http://localhost:8080/ws-stomp');
+    function createRoom() {
+        const ownerId = document.getElementById("owner-id").value || "ownerUUID5";
+
+        // 방 생성 API 요청
+        axios.post("http://localhost:8080/rooms", { ownerId })
+            .then(response => {
+                roomId = response.data.roomId;
+                document.getElementById("room-id").innerText = roomId;
+                document.getElementById("room-setup").style.display = "none";
+                document.getElementById("room-container").style.display = "block";
+
+                // 방에 입장한 유저 리스트 실시간 업데이트
+                connectToRoom(roomId);
+            })
+            .catch(error => {
+                console.error("Failed to create room:", error);
+            });
+    }
+
+    function connectToRoom(roomId) {
+        const socket = new SockJS("http://localhost:8080/ws-stomp");
         stompClient = Stomp.over(socket);
+
         stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/messages', function (message) {
-                showMessage(JSON.parse(message.body).content);
+            console.log("Connected to room:", frame);
+
+            // 구독 설정: 입장한 유저 정보를 수신
+            stompClient.subscribe(`/topic/rooms/${roomId}`, function (message) {
+                console.log("Received message:", message.body);  // 로그 추가
+                const userMessage = JSON.parse(message.body);
+                addUserToList(userMessage.sender);
             });
         });
     }
 
-    function sendMessage() {
-        var messageContent = document.getElementById("message").value;
-        if (messageContent && stompClient) {
-            stompClient.send("/app/send", {}, JSON.stringify({'sender': 'User', 'content': messageContent}));
-            document.getElementById("message").value = "";
-        }
+    function addUserToList(userId) {
+        const userList = document.getElementById("user-list");
+        const userElement = document.createElement("li");
+        userElement.textContent = userId;
+        userList.appendChild(userElement);
     }
-
-    function showMessage(message) {
-        var chatBox = document.getElementById("chat-box");
-        var messageElement = document.createElement("p");
-        messageElement.textContent = message;
-        chatBox.appendChild(messageElement);
-    }
-
-    // 방 입장 시 해당 방의 WebSocket 경로 구독
-    function enterRoom(roomId) {
-        const socket = new SockJS('/ws');
-        const stompClient = Stomp.over(socket);
-        stompClient.connect({}, () => {
-            stompClient.subscribe(`/topic/rooms/${roomId}`, (message) => {
-                console.log("Received message: ", JSON.parse(message.body));
-            });
-        });
-    }
-
-
-    connect();
 </script>
 </body>
 </html>

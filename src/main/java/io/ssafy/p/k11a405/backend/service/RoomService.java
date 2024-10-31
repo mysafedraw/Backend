@@ -1,16 +1,12 @@
 package io.ssafy.p.k11a405.backend.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ssafy.p.k11a405.backend.dto.RoomEventMessage;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
-import io.ssafy.p.k11a405.backend.pubsub.GenericMessageSubscribe;
-import io.ssafy.p.k11a405.backend.pubsub.RedisMessageSubscriber;
+import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
+import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.listener.PatternTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
@@ -21,16 +17,18 @@ import java.util.UUID;
 public class RoomService {
 
     private final StringRedisTemplate stringRedisTemplate;
-    private final RedisMessageListenerContainer redisMessageListenerContainer;
+    private final RedisSubscriber redisSubscriber;  // RedisSubscriber 주입
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final ObjectMapper objectMapper;
+    private final GenericMessagePublisher genericMessagePublisher;
 
+    // 채팅방 구독 메서드
     public void subscribeToRoomChannel(String roomId) {
         String channelName = "room:" + roomId;
-        String destinationPath = "/topic/rooms/" + roomId;  // 동적으로 WebSocket 경로 설정
-        MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(
-                new GenericMessageSubscribe<>(simpMessagingTemplate, objectMapper, RoomEventMessage.class, destinationPath));
-        redisMessageListenerContainer.addMessageListener(listenerAdapter, new PatternTopic(channelName));
+        String destinationPath = "/topic/rooms/" + roomId;
+
+        // RedisSubscriber의 메서드로 구독 설정
+        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, destinationPath);
+        log.info("Subscribed to room channel: {}", channelName);
     }
 
     public RoomResponseDTO createRoom(String ownerId) {
@@ -53,11 +51,14 @@ public class RoomService {
         long entryTime = System.currentTimeMillis() / 1000;
         stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
 
-        // 구독 로직
-        subscribeToRoomChannel(roomId);
+        // Redis 채널 구독 설정
+        String channelName = "room:" + roomId;
+        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/topic/rooms/" + roomId);
+        log.info("Subscribed to room channel: {}", channelName);
 
-        // WebSocket을 통해 방 입장 메시지 전송
+        // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
-        simpMessagingTemplate.convertAndSend("/topic/rooms/" + roomId, entryMessage);
+        genericMessagePublisher.publishString(channelName, entryMessage);
+        log.info("Message sent to {}: {}", "/topic/rooms/" + roomId, entryMessage);
     }
 }
