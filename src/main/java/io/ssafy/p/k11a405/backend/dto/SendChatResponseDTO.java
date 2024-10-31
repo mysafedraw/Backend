@@ -2,7 +2,6 @@ package io.ssafy.p.k11a405.backend.dto;
 
 import lombok.Builder;
 
-@Builder
 public record SendChatResponseDTO(
         String senderId,
         String roomId,
@@ -10,4 +9,9 @@ public record SendChatResponseDTO(
         String nickname,
         String sentAt
 ) {
+
+    @Builder
+    public SendChatResponseDTO(SendChatRequestDTO sendChatRequestDTO, String sentAt) {
+        this(sendChatRequestDTO.senderId(), sendChatRequestDTO.roomId(), sendChatRequestDTO.content(), sendChatRequestDTO.nickname(), sentAt);
+    }
 }
