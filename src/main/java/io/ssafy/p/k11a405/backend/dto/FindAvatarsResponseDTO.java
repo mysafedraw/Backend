@@ -5,7 +5,8 @@ import java.util.List;
 
 @Builder
 public record FindAvatarsResponseDTO (
-    String avatarName,
-    String profileImg,
-    List<String> hashTagNameList
+        Integer id,
+        String avatarName,
+        String profileImg,
+        List<String> hashTagNameList
 ) {}

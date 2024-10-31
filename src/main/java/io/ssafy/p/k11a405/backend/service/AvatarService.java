@@ -1,9 +1,12 @@
 package io.ssafy.p.k11a405.backend.service;
 
+import io.ssafy.p.k11a405.backend.dto.FindAvatarsInfoResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.FindAvatarsResponseDTO;
 import io.ssafy.p.k11a405.backend.entity.AvatarHashTag;
 import io.ssafy.p.k11a405.backend.entity.Avatars;
 import io.ssafy.p.k11a405.backend.entity.HashTags;
+import io.ssafy.p.k11a405.backend.exception.BusinessException;
+import io.ssafy.p.k11a405.backend.exception.ErrorCode;
 import io.ssafy.p.k11a405.backend.repository.AvatarHashTagRepository;
 import io.ssafy.p.k11a405.backend.repository.AvatarRepository;
 import io.ssafy.p.k11a405.backend.repository.HashTagRepository;
@@ -43,6 +46,7 @@ public class AvatarService {
             }
 
             FindAvatarsResponseDTO findAvatarsResponseDTO = FindAvatarsResponseDTO.builder()
+                    .id(avatar.getId())
                     .avatarName(avatar.getName())
                     .hashTagNameList(hashTagNameList)
                     .profileImg(avatar.getProfileImg())
@@ -52,5 +56,19 @@ public class AvatarService {
         }
 
         return findAvatarsResponseDTOList;
+    }
+
+    @Transactional
+    public FindAvatarsInfoResponseDTO findAvatarInfo(Integer avatarsId) {
+        Optional<Avatars> avatars = avatarRepository.findById(avatarsId);
+
+        if(avatars.isPresent()) {
+            return FindAvatarsInfoResponseDTO.builder()
+                    .assetImg(avatars.get().getProfileImg())
+                    .feature(avatars.get().getFeature())
+                    .name(avatars.get().getName())
+                    .build();
+        }
+        throw new BusinessException(ErrorCode.AVATAR_NOT_FOUND);
     }
 }
