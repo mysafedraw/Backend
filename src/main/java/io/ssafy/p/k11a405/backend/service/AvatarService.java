@@ -3,6 +3,7 @@ package io.ssafy.p.k11a405.backend.service;
 import io.ssafy.p.k11a405.backend.dto.FindAvatarsInfoResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.FindAvatarsResponseDTO;
 import io.ssafy.p.k11a405.backend.entity.AvatarHashTag;
+import io.ssafy.p.k11a405.backend.entity.AvatarHashTagId;
 import io.ssafy.p.k11a405.backend.entity.Avatars;
 import io.ssafy.p.k11a405.backend.entity.HashTags;
 import io.ssafy.p.k11a405.backend.exception.BusinessException;
@@ -32,18 +33,14 @@ public class AvatarService {
 
         //일단 캐릭터 전부 가져오고, 각각에 맞는 해시태그들 가져오기
         List<Avatars> avatarsList = avatarRepository.findAll();
-        List<String> hashTagNameList = new ArrayList<>();
 
         for (Avatars avatar : avatarsList) {
-            //해당 아바타의 해시태그만 가져오기
-            List<Integer> hashTagIdList = avatarHashTagRepository.findByAvatarsId(avatar.getId())
-                    .stream().map(avatarHashTag-> avatarHashTag.getId().getAvatarsId().getId()).toList();
-
-            //id로 name 가져오기
-            for(int h: hashTagIdList) {
-                Optional<HashTags> name = hashTagRepository.findById(h);
-                name.ifPresent(hashTags -> hashTagNameList.add(hashTags.getName()));
-            }
+            List<AvatarHashTag> avatarHashTagList = avatarHashTagRepository.findByAvatarsId(avatar.getId());
+            List<String> hashTagNameList = avatarHashTagList.stream()
+                    .map(AvatarHashTag::getId)
+                    .map(AvatarHashTagId::getHashTagsId)
+                    .map(HashTags::getName)
+                    .toList();
 
             FindAvatarsResponseDTO findAvatarsResponseDTO = FindAvatarsResponseDTO.builder()
                     .id(avatar.getId())
@@ -60,15 +57,12 @@ public class AvatarService {
 
     @Transactional
     public FindAvatarsInfoResponseDTO findAvatarInfo(Integer avatarsId) {
-        Optional<Avatars> avatars = avatarRepository.findById(avatarsId);
+        Avatars avatars = avatarRepository.findById(avatarsId).orElseThrow(() -> new BusinessException(ErrorCode.AVATAR_NOT_FOUND));
 
-        if(avatars.isPresent()) {
-            return FindAvatarsInfoResponseDTO.builder()
-                    .assetImg(avatars.get().getProfileImg())
-                    .feature(avatars.get().getFeature())
-                    .name(avatars.get().getName())
-                    .build();
-        }
-        throw new BusinessException(ErrorCode.AVATAR_NOT_FOUND);
+        return FindAvatarsInfoResponseDTO.builder()
+                .assetImg(avatars.getProfileImg())
+                .feature(avatars.getFeature())
+                .name(avatars.getName())
+                .build();
     }
 }
