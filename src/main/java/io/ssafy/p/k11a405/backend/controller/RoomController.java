@@ -1,6 +1,8 @@
 package io.ssafy.p.k11a405.backend.controller;
 
 import io.ssafy.p.k11a405.backend.dto.ChatMessage;
+import io.ssafy.p.k11a405.backend.dto.RoomRequestDTO;
+import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
 import io.ssafy.p.k11a405.backend.pubsub.RoomMessageListener;
 import io.ssafy.p.k11a405.backend.service.RoomService;
@@ -10,23 +12,23 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/rooms")
 @RequiredArgsConstructor
 @Slf4j
 public class RoomController {
 
-    private final String defaultMethodName = "onMessage";
-
-    private final RedisMessageListenerContainer redisMessageListenerContainer;
-    private final SimpMessagingTemplate simpMessagingTemplate;
-    private final MessagePublisher messagePublisher;
-
     private final RoomService roomService;
 
+    /*
     @MessageMapping("/create-room")
     public void createRoom(ChatMessage message) {
         System.out.println("Received message: " + message); // 디버그용 로그
@@ -37,5 +39,11 @@ public class RoomController {
         redisMessageListenerContainer.addMessageListener(messageListenerAdapter, new ChannelTopic("stomp-channel-topic"));
         messagePublisher.publish("stomp-message-channel", message);
     }
+    */
 
+    @PostMapping
+    public ResponseEntity<RoomResponseDTO> createRoom(@RequestBody RoomRequestDTO roomRequestDTO) {
+        RoomResponseDTO roomResponse = roomService.createRoom(roomRequestDTO.ownerId());
+        return ResponseEntity.ok(roomResponse);
+    }
 }

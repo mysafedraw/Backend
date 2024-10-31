@@ -43,6 +43,18 @@
         chatBox.appendChild(messageElement);
     }
 
+    // 방 입장 시 해당 방의 WebSocket 경로 구독
+    function enterRoom(roomId) {
+        const socket = new SockJS('/ws');
+        const stompClient = Stomp.over(socket);
+        stompClient.connect({}, () => {
+            stompClient.subscribe(`/topic/rooms/${roomId}`, (message) => {
+                console.log("Received message: ", JSON.parse(message.body));
+            });
+        });
+    }
+
+
     connect();
 </script>
 </body>
