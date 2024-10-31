@@ -13,7 +13,6 @@ public class MessagePublisher {
 
     public void publish(String channel, Object message) {
         try {
-            System.out.println("Publishing to Redis channel " + channel + ": " + message); // 디버깅 로그
             redisTemplate.convertAndSend(channel, message);
         } catch (Exception e) {
             e.printStackTrace();
