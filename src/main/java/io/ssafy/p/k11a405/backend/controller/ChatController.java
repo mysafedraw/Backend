@@ -17,7 +17,6 @@ public class ChatController {
     }
 
     @MessageMapping("/send") // 클라이언트가 WebSocket으로 보내는 메시지 경로
-    @SendTo("/topic/messages") // 구독자에게 보낼 경로
     public void sendMessage(ChatMessage message) {
         System.out.println("Received message: " + message); // 디버그용 로그
         // 메시지를 Redis Pub/Sub 채널로 발행
