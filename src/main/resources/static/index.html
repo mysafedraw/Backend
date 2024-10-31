@@ -16,6 +16,12 @@
 
 <script>
     var stompClient = null;
+    const chatMessage = {
+        senderId: '13579',
+        roomId: '33920',
+        content: 'This is the Message',
+        nickname: 'sss nickname'
+    }
 
     function connect() {
         var socket = new SockJS('http://localhost:8080/ws-stomp');
@@ -25,13 +31,18 @@
             stompClient.subscribe('/topic/messages', function (message) {
                 showMessage(JSON.parse(message.body).content);
             });
+            stompClient.subscribe('/chat/send/' + chatMessage.roomId, (message) => {
+                console.log("received message");
+                console.log(message);
+            })
         });
     }
 
     function sendMessage() {
         var messageContent = document.getElementById("message").value;
         if (messageContent && stompClient) {
-            stompClient.send("/app/send", {}, JSON.stringify({'sender': 'User', 'content': messageContent}));
+            // stompClient.send("/app/send", {}, JSON.stringify({'sender': 'User', 'content': messageContent}));
+            stompClient.send("/chat/send", {}, JSON.stringify(chatMessage));
             document.getElementById("message").value = "";
         }
     }
