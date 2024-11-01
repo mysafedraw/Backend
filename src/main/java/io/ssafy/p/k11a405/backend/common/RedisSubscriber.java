@@ -20,7 +20,7 @@ public class RedisSubscriber {
     // 공통 구독 메서드
     public <T> void subscribeToChannel(String channelName, Class<T> messageType, String destinationPath) {
         MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(
-                new GenericMessageSubscribe<>(simpMessagingTemplate, objectMapper, messageType, destinationPath));
+                new GenericMessageSubscribe<>(simpMessagingTemplate, objectMapper, messageType, destinationPath), "onMessage");
         listenerContainer.addMessageListener(listenerAdapter, new PatternTopic(channelName));
     }
 
