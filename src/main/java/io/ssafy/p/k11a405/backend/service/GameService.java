@@ -1,5 +1,6 @@
 package io.ssafy.p.k11a405.backend.service;
 
+import io.ssafy.p.k11a405.backend.dto.GameAction;
 import io.ssafy.p.k11a405.backend.dto.StartGameRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.StartGameResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
@@ -21,7 +22,7 @@ public class GameService {
         // db에서 scenarioDialog 가져오기
 
         String tmpScenarioDialog = "헉 불이났어요!!";
-        StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(tmpScenarioDialog);
+        StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(tmpScenarioDialog, GameAction.GAME_START);
         messagePublisher.publish(channelName, startGameResponseDTO);
     }
 }
