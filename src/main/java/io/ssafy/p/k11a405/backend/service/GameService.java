@@ -47,4 +47,13 @@ public class GameService {
         ExplainResponseDTO explainResponseDTO = new ExplainResponseDTO(userIds, GameAction.ADD_EXPLAIN_QUEUE);
         messagePublisher.publish(channelName, explainResponseDTO);
     }
+
+    public void haveASay(HaveASayRequestDTO haveASayRequestDTO) {
+        String channelName = redisKeyPrefix + haveASayRequestDTO.roomId();
+        String queueKey = redisKeyPrefix + haveASayRequestDTO.roomId() + ":explanationQueue";
+        String userId = stringRedisTemplate.opsForList().leftPop(queueKey);
+        List<String> userIds = stringRedisTemplate.opsForList().range(queueKey, 0, -1);
+        HaveASayResponseDTO haveASayResponseDTO = new HaveASayResponseDTO(userId, userIds, GameAction.HAVE_A_SAY);
+        messagePublisher.publish(channelName, haveASayResponseDTO);
+    }
 }

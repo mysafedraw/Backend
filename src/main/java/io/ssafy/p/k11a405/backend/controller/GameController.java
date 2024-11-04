@@ -1,6 +1,7 @@
 package io.ssafy.p.k11a405.backend.controller;
 
 import io.ssafy.p.k11a405.backend.dto.ExplainRequestDTO;
+import io.ssafy.p.k11a405.backend.dto.HaveASayRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.StartGameRequestDTO;
 import io.ssafy.p.k11a405.backend.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,10 @@ public class GameController {
     @MessageMapping("/explanation-queue")
     public void addToExplanationQueue(ExplainRequestDTO explainRequestDTO) {
         gameService.addToExplanationQueue(explainRequestDTO);
+    }
+
+    @MessageMapping("say")
+    public void haveASay(HaveASayRequestDTO haveASayRequestDTO) {
+        gameService.haveASay(haveASayRequestDTO);
     }
 }
