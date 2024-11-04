@@ -22,7 +22,6 @@ public class GameController {
 
     @MessageMapping("/explanation-queue")
     public void addToExplanationQueue(ExplainRequestDTO explainRequestDTO) {
-        log.info("controller");
         gameService.addToExplanationQueue(explainRequestDTO);
     }
 }
