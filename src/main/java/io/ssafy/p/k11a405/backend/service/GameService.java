@@ -83,4 +83,11 @@ public class GameService {
         String channelName = "rooms:" + userId + ":" + "users";
         messagePublisher.publish(channelName, new CheckAnswerResponseDTO(userId, true));
     }
+
+    public void vote(String roomId, boolean isAgreed, String userId) {
+        // 방장 아이디 가져오기
+        String hostId = "123123";
+        String channelName = "rooms:" + hostId + ":users";
+        messagePublisher.publish(channelName, new VoteResponseDTO(userId, isAgreed));
+    }
 }

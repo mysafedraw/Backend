@@ -41,4 +41,9 @@ public class GameController {
         String userId = checkAnswerRequestDTO.userId();
         simpMessagingTemplate.convertAndSend("/games/" + userId, "response");
     }
+
+    @MessageMapping("/vote")
+    public void vote(VoteRequestDTO voteRequestDTO) {
+        gameService.vote(voteRequestDTO.roomId(), voteRequestDTO.isAgreed(), voteRequestDTO.userId());
+    }
 }
