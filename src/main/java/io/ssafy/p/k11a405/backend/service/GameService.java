@@ -90,4 +90,18 @@ public class GameService {
         String channelName = "rooms:" + hostId + ":users";
         messagePublisher.publish(channelName, new VoteResponseDTO(userId, isAgreed));
     }
+
+    public void confirmAnswer(String userId, boolean isConfirmed, String roomId) {
+        ConfirmResponseDTO confirmResponseDTO = new ConfirmResponseDTO(GameAction.ANSWER_CONFIRMED);
+        if (isConfirmed) {
+            // 유저 점수 가져오기
+
+            // 유저 점수 업데이트
+
+        }
+        // 방장 id 가져오기
+        String hostId = "hostId";
+        String channelName = "rooms:" + hostId + ":users";
+        messagePublisher.publish(channelName, confirmResponseDTO);
+    }
 }

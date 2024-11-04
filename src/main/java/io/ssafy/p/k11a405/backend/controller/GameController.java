@@ -46,4 +46,9 @@ public class GameController {
     public void vote(VoteRequestDTO voteRequestDTO) {
         gameService.vote(voteRequestDTO.roomId(), voteRequestDTO.isAgreed(), voteRequestDTO.userId());
     }
+
+    @MessageMapping("/confirm")
+    public void confirmAnswer(ConfirmRequestDTO confirmRequestDTO) {
+        gameService.confirmAnswer(confirmRequestDTO.userId(), confirmRequestDTO.isConfirmed(), confirmRequestDTO.roomId());
+    }
 }
