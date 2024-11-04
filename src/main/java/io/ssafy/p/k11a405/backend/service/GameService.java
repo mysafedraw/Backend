@@ -71,4 +71,16 @@ public class GameService {
         String channelName = redisKeyPrefix + checkAllAnswersRequestDTO.roomId();
         messagePublisher.publish(channelName, checkAllAnswersResponseDTO);
     }
+
+    public void checkAnswer(String roomId, String userId, String scenarioId, String userAnswer) {
+        // 정답 체크
+
+        // 유저 정답 여부 redis 저장
+        String userKey = "user:" + userId;
+        stringRedisTemplate.opsForHash().put(userKey, "isCorrect", true);
+
+        // 해당 유저에게 정답 여부 전송
+        String channelName = "rooms:" + userId + ":" + "users";
+        messagePublisher.publish(channelName, new CheckAnswerResponseDTO(userId, true));
+    }
 }
