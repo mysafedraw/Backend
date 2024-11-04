@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -55,5 +56,19 @@ public class GameService {
         List<String> userIds = stringRedisTemplate.opsForList().range(queueKey, 0, -1);
         HaveASayResponseDTO haveASayResponseDTO = new HaveASayResponseDTO(userId, userIds, GameAction.HAVE_A_SAY);
         messagePublisher.publish(channelName, haveASayResponseDTO);
+    }
+
+    public void checkAllAnswers(CheckAllAnswersRequestDTO checkAllAnswersRequestDTO) {
+        List<AnswerStatusResponseDTO> answerStatuses = new ArrayList<>();
+        answerStatuses.add(AnswerStatusResponseDTO.builder()
+                        .avatarsImgSrc("https://cdn.inflearn.com/public/main/profile/default_profile.png")
+                        .drawSrc("https://cdn.inflearn.com/public/main_sliders/1c333cda-3dcf-46c4-be01-46b6f99ae750/I_O_python_1.png")
+                        .isCorrect(true)
+                        .nickname("하이")
+                        .userId("userID")
+                .build());
+        CheckAllAnswersResponseDTO checkAllAnswersResponseDTO = new CheckAllAnswersResponseDTO(answerStatuses, GameAction.CHECK_ALL_ANSWERS);
+        String channelName = redisKeyPrefix + checkAllAnswersRequestDTO.roomId();
+        messagePublisher.publish(channelName, checkAllAnswersResponseDTO);
     }
 }

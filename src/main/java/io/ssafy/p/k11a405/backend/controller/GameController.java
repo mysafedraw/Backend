@@ -1,5 +1,6 @@
 package io.ssafy.p.k11a405.backend.controller;
 
+import io.ssafy.p.k11a405.backend.dto.CheckAllAnswersRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.ExplainRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.HaveASayRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.StartGameRequestDTO;
@@ -29,5 +30,10 @@ public class GameController {
     @MessageMapping("/say")
     public void haveASay(HaveASayRequestDTO haveASayRequestDTO) {
         gameService.haveASay(haveASayRequestDTO);
+    }
+
+    @MessageMapping("/answers")
+    public void checkAllAnswers(CheckAllAnswersRequestDTO checkAllAnswersRequestDTO) {
+        gameService.checkAllAnswers(checkAllAnswersRequestDTO);
     }
 }
