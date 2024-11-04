@@ -26,7 +26,7 @@ public class GameController {
         gameService.addToExplanationQueue(explainRequestDTO);
     }
 
-    @MessageMapping("say")
+    @MessageMapping("/say")
     public void haveASay(HaveASayRequestDTO haveASayRequestDTO) {
         gameService.haveASay(haveASayRequestDTO);
     }
