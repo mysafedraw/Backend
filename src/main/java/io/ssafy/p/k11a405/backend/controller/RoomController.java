@@ -47,7 +47,7 @@ public class RoomController {
 
     @PostMapping
     public ResponseEntity<RoomResponseDTO> createRoom(@RequestBody RoomRequestDTO roomRequestDTO) {
-        RoomResponseDTO roomResponse = roomService.createRoom(roomRequestDTO.ownerId());
+        RoomResponseDTO roomResponse = roomService.createRoom(roomRequestDTO.hostId());
         return ResponseEntity.ok(roomResponse);
     }
 

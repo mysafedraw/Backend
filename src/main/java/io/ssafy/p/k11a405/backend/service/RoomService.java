@@ -43,7 +43,7 @@ public class RoomService {
 
         // Redis에 방 정보 저장
         stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomId);
-        stringRedisTemplate.opsForHash().put(roomKey, "ownerId", ownerId);
+        stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
         // 방 생성 후 방장 입장 및 구독
         joinRoom(roomId, ownerId);
