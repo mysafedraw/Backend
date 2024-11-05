@@ -2,19 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebSocket Chat Test</title>
+    <title>Room Creation and Entry</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
-<h2>Chat Room</h2>
-<div>
-    <input type="text" id="message" placeholder="Enter your message"/>
-    <button onclick="sendMessage()">Send</button>
+<h2>Create or Join a Room</h2>
+
+<!-- 방 생성 영역 -->
+<div id="room-setup">
+    <input type="text" id="owner-id" placeholder="Enter owner ID" value="ownerUUID1"/>
+    <button onclick="createRoom()">Create and Enter Room</button>
 </div>
-<div id="chat-box"></div>
+
+<!-- 방 입장용 UI -->
+<div id="room-join">
+    <input type="text" id="join-room-id" placeholder="Enter Room ID"/>
+    <input type="text" id="user-id" placeholder="Enter User ID" value="userUUID1"/>
+    <button onclick="joinRoom()">Join Room</button>
+</div>
+
+<!-- 방 유저 리스트 -->
+<div id="room-container" style="display: none;">
+    <h3>Room ID: <span id="room-id"></span></h3>
+    <h4>Users in Room:</h4>
+    <ul id="user-list"></ul>
+</div>
 
 <script>
+    let roomId = null;
     var stompClient = null;
     const chatMessage = {
         senderId: '13579',
@@ -22,20 +39,102 @@
         content: 'This is the Message',
         nickname: 'sss nickname'
     }
+    let userMessage = null;
 
-    function connect() {
-        var socket = new SockJS('http://localhost:8080/ws-stomp');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/messages', function (message) {
-                showMessage(JSON.parse(message.body).content);
-            });
-            stompClient.subscribe('/chat/send/' + chatMessage.roomId, (message) => {
-                console.log("received message");
-                console.log(message);
+    function createRoom() {
+        const ownerId = document.getElementById("owner-id").value;
+
+        // 방 생성 API 요청
+        axios.post("http://localhost:8080/api/rooms", { ownerId })
+            .then(async response => {
+                roomId = response.data.roomId;
+                document.getElementById("room-id").innerText = roomId;
+                document.getElementById("room-setup").style.display = "none";
+                document.getElementById("room-join").style.display = "none";
+                document.getElementById("room-container").style.display = "block";
+
+                await connectToRoom(roomId);
+                // 새로운 유저가 입장한 사실을 알리기 위해 서버로 메시지 전송
+                // const entryMessage = {
+                //     userId: ownerId,
+                //     roomId: roomId,
+                //     action: "enter"
+                // };
+                // stompClient.send(`/rooms/${roomId}/join`, {}, JSON.stringify(entryMessage));
+                addUserToList("createRoom: ", ownerId);
             })
+            .catch(error => {
+                console.error("Failed to create room:", error);
+            });
+    }
+
+    function newEnter() {
+        console.log("new enter");
+    }
+
+    function joinRoom() {
+        const roomIdInput = document.getElementById("join-room-id").value;
+        const userId = document.getElementById("user-id").value;
+        
+        if (!roomIdInput) {
+            alert("Please enter a Room ID to join.");
+            return;
+        }
+
+        roomId = roomIdInput;
+        document.getElementById("room-id").innerText = roomId;
+        document.getElementById("room-setup").style.display = "none";
+        document.getElementById("room-join").style.display = "none";
+        document.getElementById("room-container").style.display = "block";
+
+        axios.post(`http://localhost:8080/api/rooms/join`, { roomId: roomId, userId: userId })
+            .then(async response => {
+                await connectToRoom(roomId, userId);
+                // 새로운 유저가 입장한 사실을 알리기 위해 서버로 메시지 전송
+                // const entryMessage = {
+                //     userId: userId,
+                //     roomId: roomId,
+                //     action: "enter"
+                // };
+                // stompClient.send(`/rooms/${roomId}/join`, {}, JSON.stringify(entryMessage));
+                addUserToList("joinRoom: ", userId);
+            })
+            .catch(error => console.error("Failed to join room:", error));
+    }
+
+    function connectToRoom(roomId, userId) {
+        return new Promise((resolve, reject) => {
+            const socket = new SockJS("http://localhost:8080/ws-stomp");
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log("Connected to room:", frame);
+
+                // 구독 설정: 입장한 유저 정보를 수신
+                stompClient.subscribe(`/topic/rooms/${roomId}`, function (message) {
+                    console.log("Received message:", message.body);
+                    var userMessage = JSON.parse(message.body);
+
+                    addUserToList("connectToRoom: ",userMessage.userId);
+                });
+                stompClient.subscribe('/chat/send/' + chatMessage.roomId, (message) => {
+                    console.log("Received message:", message);
+                });
+
+                resolve(); // 연결이 완료되면 Promise를 성공 상태로 설정
+            }, function (error) {
+                console.error("Failed to connect:", error);
+                reject(error); // 연결 실패 시 Promise를 실패 상태로 설정
+            });
         });
+    }
+
+    function addUserToList(str,userId) {
+        const userList = document.getElementById("user-list");
+        const userElement = document.createElement("li");
+        userElement.textContent = userId;
+        userList.appendChild(userElement);
+        console.log(str+userId);
     }
 
     function sendMessage() {
@@ -46,15 +145,6 @@
             document.getElementById("message").value = "";
         }
     }
-
-    function showMessage(message) {
-        var chatBox = document.getElementById("chat-box");
-        var messageElement = document.createElement("p");
-        messageElement.textContent = message;
-        chatBox.appendChild(messageElement);
-    }
-
-    connect();
 </script>
 </body>
 </html>
