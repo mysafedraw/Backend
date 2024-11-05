@@ -1,7 +1,9 @@
 package io.ssafy.p.k11a405.backend.controller;
 
+import io.ssafy.p.k11a405.backend.dto.UpdateUserRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.UserRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.UserResponseDTO;
+import io.ssafy.p.k11a405.backend.global.DataResponse;
 import io.ssafy.p.k11a405.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,5 +21,11 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO userRequestDTO) {
         UserResponseDTO userResponseDTO = userService.createUser(userRequestDTO.nickname(), userRequestDTO.avatarId());
         return ResponseEntity.ok(userResponseDTO);
+    }
+
+    @PostMapping("/nickname")
+    public ResponseEntity<DataResponse<UserResponseDTO>> updateNickname(@RequestBody UpdateUserRequestDTO updateUserRequestDTO) {
+        UserResponseDTO userResponseDTO = userService.updateNickname(updateUserRequestDTO.nickname(), updateUserRequestDTO.userId());
+        return ResponseEntity.ok(DataResponse.of("닉네임 변경에 성공했습니다.", userResponseDTO));
     }
 }

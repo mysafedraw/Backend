@@ -28,4 +28,21 @@ public class UserService {
 
         return new UserResponseDTO(userId, nickname, avatarInfo.profileImg()); // 생성된 유저 ID 반환
     }
+
+    public UserResponseDTO updateNickname(String nickname, String userId) {
+        String userKey = generateUserKey(userId);
+        stringRedisTemplate.opsForHash().put(userKey, "nickname", nickname);
+        return getUserInfoByUserId(userId);
+    }
+
+    private UserResponseDTO getUserInfoByUserId(String userId) {
+        String userKey = generateUserKey(userId);
+        String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, "nickname"));
+        String profileImg = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, "avatarProfileImg"));
+        return new UserResponseDTO(userId, nickname, profileImg);
+    }
+
+    public String generateUserKey(String userId) {
+        return "user:" + userId;
+    }
 }
