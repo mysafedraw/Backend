@@ -31,7 +31,7 @@ public class RoomService {
     // 채팅방 구독 메서드
     public void subscribeToRoomChannel(String roomId) {
         String channelName = "rooms:" + roomId;
-        String destinationPath = "/topic/rooms/" + roomId;
+        String destinationPath = "/rooms/" + roomId;
 
         // RedisSubscriber의 메서드로 구독 설정
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, destinationPath);
@@ -63,7 +63,7 @@ public class RoomService {
 
         // Redis 채널 구독 설정
         String channelName = "rooms:" + roomId;
-        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/topic/rooms/" + roomId);
+        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
 
         // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
