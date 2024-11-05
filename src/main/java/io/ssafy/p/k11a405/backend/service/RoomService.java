@@ -65,6 +65,15 @@ public class RoomService {
         genericMessagePublisher.publishString(channelName, entryMessage);
     }
 
+    public void leaveRoom(String roomId, String userId) {
+
+        // 퇴장 메시지를 Redis 채널에 발행
+        RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "leave");
+        leaveUser(roomId, userId);
+        String channelName = "rooms:" + roomId;
+        genericMessagePublisher.publishString(channelName, entryMessage);
+    }
+
     public List<String> getAllUsersInRoom(String roomId) {
         String userKey = "rooms:" + roomId + ":users";
         // ZSetOperations 인스턴스를 가져와서 사용하는 방식
@@ -82,5 +91,10 @@ public class RoomService {
         String userKey = "rooms:" + roomId + ":users";
         long entryTime = System.currentTimeMillis() / 1000;
         stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
+    }
+
+    public void leaveUser(String roomId, String userId) {
+        String userKey = "rooms:" + roomId + ":users";
+        stringRedisTemplate.opsForZSet().remove(userKey, userId);
     }
 }
