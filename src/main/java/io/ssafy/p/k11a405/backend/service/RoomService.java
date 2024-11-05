@@ -35,7 +35,6 @@ public class RoomService {
 
         // RedisSubscriber의 메서드로 구독 설정
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, destinationPath);
-        log.info("Subscribed to room channel: {}", channelName);
     }
 
     public RoomResponseDTO createRoom(String ownerId) {
@@ -45,8 +44,6 @@ public class RoomService {
         // Redis에 방 정보 저장
         stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomId);
         stringRedisTemplate.opsForHash().put(roomKey, "ownerId", ownerId);
-
-        System.out.println("Room created with ID: " + roomId);
 
         // 방 생성 후 방장 입장 및 구독
         joinRoom(roomId, ownerId);
@@ -67,12 +64,10 @@ public class RoomService {
         // Redis 채널 구독 설정
         String channelName = "rooms:" + roomId;
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/topic/rooms/" + roomId);
-        log.info("Subscribed to room channel joinRoom: {}", channelName);
 
         // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
         genericMessagePublisher.publishString(channelName, entryMessage);
-        log.info("Message sent to joinRoom {}: {}", "/topic/rooms/" + roomId, entryMessage);
     }
 
     public List<String> getAllUsersInRoom(String roomId) {
