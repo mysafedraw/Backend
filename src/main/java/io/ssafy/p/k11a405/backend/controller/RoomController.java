@@ -1,23 +1,13 @@
 package io.ssafy.p.k11a405.backend.controller;
 
-import io.ssafy.p.k11a405.backend.dto.*;
-import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
-import io.ssafy.p.k11a405.backend.pubsub.RoomMessageListener;
+import io.ssafy.p.k11a405.backend.dto.RoomJoinRequestDTO;
+import io.ssafy.p.k11a405.backend.dto.RoomRequestDTO;
+import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
 import io.ssafy.p.k11a405.backend.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.listener.ChannelTopic;
-import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-//@RestController
-@Controller
+@RestController
 @RequestMapping
 @RequiredArgsConstructor
 @Slf4j
