@@ -7,9 +7,16 @@ import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +30,7 @@ public class RoomService {
 
     // 채팅방 구독 메서드
     public void subscribeToRoomChannel(String roomId) {
-        String channelName = "room:" + roomId;
+        String channelName = "rooms:" + roomId;
         String destinationPath = "/topic/rooms/" + roomId;
 
         // RedisSubscriber의 메서드로 구독 설정
@@ -32,33 +39,58 @@ public class RoomService {
     }
 
     public RoomResponseDTO createRoom(String ownerId) {
-        String roomUUID = UUID.randomUUID().toString();
-        String roomKey = "room:" + roomUUID;
+        String roomId = UUID.randomUUID().toString();
+        String roomKey = "rooms:" + roomId;
 
         // Redis에 방 정보 저장
-        stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomUUID);
+        stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomId);
         stringRedisTemplate.opsForHash().put(roomKey, "ownerId", ownerId);
 
-        // 방 생성 후 방장 입장 및 구독
-        enterRoom(roomUUID, ownerId);
+        System.out.println("Room created with ID: " + roomId);
 
-        return new RoomResponseDTO(roomUUID, ownerId);
+        // 방 생성 후 방장 입장 및 구독
+        joinRoom(roomId, ownerId);
+
+        // 방 정보에 방장 세션 ID 포함
+//        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
+//        stringRedisTemplate.opsForHash().put(roomKey, "ownerSessionId", ownerSessionId);
+
+        return new RoomResponseDTO(roomId, ownerId);
     }
 
-    public void enterRoom(String roomId, String userId) {
-        // Redis에 유저 입장 시간 기록
-        String userKey = "room:" + roomId + ":users";
-        long entryTime = System.currentTimeMillis() / 1000;
-        stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
+    public void joinRoom(String roomId, String userId) {
+//        // Redis에 유저 입장 시간 기록
+//        String userKey = "rooms:" + roomId + ":users";
+//        long entryTime = System.currentTimeMillis() / 1000;
+//        stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
 
         // Redis 채널 구독 설정
-        String channelName = "room:" + roomId;
+        String channelName = "rooms:" + roomId;
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/topic/rooms/" + roomId);
-        log.info("Subscribed to room channel: {}", channelName);
+        log.info("Subscribed to room channel joinRoom: {}", channelName);
 
         // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
         genericMessagePublisher.publishString(channelName, entryMessage);
-        log.info("Message sent to {}: {}", "/topic/rooms/" + roomId, entryMessage);
+        log.info("Message sent to joinRoom {}: {}", "/topic/rooms/" + roomId, entryMessage);
+    }
+
+    public List<String> getAllUsersInRoom(String roomId) {
+        String userKey = "rooms:" + roomId + ":users";
+        // ZSetOperations 인스턴스를 가져와서 사용하는 방식
+        ZSetOperations<String, String> zSetOperations = stringRedisTemplate.opsForZSet();
+        Set<TypedTuple<String>> users = zSetOperations.rangeWithScores(userKey, 0, -1);
+
+        // users가 null이 아니면 id를 추출하고, null이면 빈 리스트를 반환
+        return users != null
+                ? users.stream().map(TypedTuple::getValue).collect(Collectors.toList())
+                : List.of();
+    }
+
+    public void addUser(String roomId, String userId) {
+        // Redis에 유저 입장 시간 기록
+        String userKey = "rooms:" + roomId + ":users";
+        long entryTime = System.currentTimeMillis() / 1000;
+        stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
     }
 }

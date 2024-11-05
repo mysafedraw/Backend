@@ -21,7 +21,7 @@ public class GenericMessagePublisher {
 
     public <T> void publishObject(String channel, T message) {
         try {
-            String jsonMessage = objectMapper.writeValueAsString(message); // 제네릭 메시지 JSON 변환
+            String jsonMessage = objectMapper.writeValueAsString(message); // 객체 타입으로 저장할것
             redisTemplate.convertAndSend(channel, jsonMessage);
             System.out.println("Published to Redis channel " + channel + ": " + jsonMessage);
         } catch (Exception e) {

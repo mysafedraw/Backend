@@ -14,13 +14,14 @@ public class UserService {
 
     public UserResponseDTO createUser(String nickname) {
         // 고유한 UUID 생성
-        String userUUID = UUID.randomUUID().toString();
+        String userId = UUID.randomUUID().toString();
         // Redis 해시에 유저 정보 저장
-        String userKey = "user:" + userUUID;
+        String userKey = "user:" + userId;
         // Redis에 유저 데이터 저장
-        stringRedisTemplate.opsForHash().put(userKey, "id", userUUID);
+        stringRedisTemplate.opsForHash().put(userKey, "id", userId);
         stringRedisTemplate.opsForHash().put(userKey, "nickname", nickname);
+//        stringRedisTemplate.opsForHash().put(userKey, "avartaId", avartaId); // 아바타 id 저장
 
-        return new UserResponseDTO(userUUID, nickname); // 생성된 유저 ID 반환
+        return new UserResponseDTO(userId, nickname); // 생성된 유저 ID 반환
     }
 }

@@ -12,8 +12,15 @@
 
 <!-- 방 생성 영역 -->
 <div id="room-setup">
-    <input type="text" id="owner-id" placeholder="Enter owner ID" value="ownerUUID5"/>
+    <input type="text" id="owner-id" placeholder="Enter owner ID" value="ownerUUID1"/>
     <button onclick="createRoom()">Create and Enter Room</button>
+</div>
+
+<!-- 방 입장용 UI -->
+<div id="room-join">
+    <input type="text" id="join-room-id" placeholder="Enter Room ID"/>
+    <input type="text" id="user-id" placeholder="Enter User ID" value="userUUID1"/>
+    <button onclick="joinRoom()">Join Room</button>
 </div>
 
 <!-- 방 유저 리스트 -->
@@ -32,51 +39,102 @@
         content: 'This is the Message',
         nickname: 'sss nickname'
     }
+    let userMessage = null;
 
     function createRoom() {
-        const ownerId = document.getElementById("owner-id").value || "ownerUUID5";
+        const ownerId = document.getElementById("owner-id").value;
 
         // 방 생성 API 요청
-        axios.post("http://localhost:8080/rooms", { ownerId })
-            .then(response => {
+        axios.post("http://localhost:8080/api/rooms", { ownerId })
+            .then(async response => {
                 roomId = response.data.roomId;
                 document.getElementById("room-id").innerText = roomId;
                 document.getElementById("room-setup").style.display = "none";
+                document.getElementById("room-join").style.display = "none";
                 document.getElementById("room-container").style.display = "block";
 
-                // 방에 입장한 유저 리스트 실시간 업데이트
-                connectToRoom(roomId);
+                await connectToRoom(roomId);
+                // 새로운 유저가 입장한 사실을 알리기 위해 서버로 메시지 전송
+                // const entryMessage = {
+                //     userId: ownerId,
+                //     roomId: roomId,
+                //     action: "enter"
+                // };
+                // stompClient.send(`/rooms/${roomId}/join`, {}, JSON.stringify(entryMessage));
+                addUserToList("createRoom: ", ownerId);
             })
             .catch(error => {
                 console.error("Failed to create room:", error);
             });
     }
 
-    function connectToRoom(roomId) {
-        const socket = new SockJS("http://localhost:8080/ws-stomp");
-        stompClient = Stomp.over(socket);
+    function newEnter() {
+        console.log("new enter");
+    }
 
-        stompClient.connect({}, function (frame) {
-            console.log("Connected to room:", frame);
+    function joinRoom() {
+        const roomIdInput = document.getElementById("join-room-id").value;
+        const userId = document.getElementById("user-id").value;
+        
+        if (!roomIdInput) {
+            alert("Please enter a Room ID to join.");
+            return;
+        }
 
-            // 구독 설정: 입장한 유저 정보를 수신
-            stompClient.subscribe(`/topic/rooms/${roomId}`, function (message) {
-                console.log("Received message:", message.body);  // 로그 추가
-                const userMessage = JSON.parse(message.body);
-                addUserToList(userMessage.sender);
-            });
-            stompClient.subscribe('/chat/send/' + chatMessage.roomId, (message) => {
-                console.log("received message");
-                console.log(message);
+        roomId = roomIdInput;
+        document.getElementById("room-id").innerText = roomId;
+        document.getElementById("room-setup").style.display = "none";
+        document.getElementById("room-join").style.display = "none";
+        document.getElementById("room-container").style.display = "block";
+
+        axios.post(`http://localhost:8080/api/rooms/join`, { roomId: roomId, userId: userId })
+            .then(async response => {
+                await connectToRoom(roomId, userId);
+                // 새로운 유저가 입장한 사실을 알리기 위해 서버로 메시지 전송
+                // const entryMessage = {
+                //     userId: userId,
+                //     roomId: roomId,
+                //     action: "enter"
+                // };
+                // stompClient.send(`/rooms/${roomId}/join`, {}, JSON.stringify(entryMessage));
+                addUserToList("joinRoom: ", userId);
             })
+            .catch(error => console.error("Failed to join room:", error));
+    }
+
+    function connectToRoom(roomId, userId) {
+        return new Promise((resolve, reject) => {
+            const socket = new SockJS("http://localhost:8080/ws-stomp");
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log("Connected to room:", frame);
+
+                // 구독 설정: 입장한 유저 정보를 수신
+                stompClient.subscribe(`/topic/rooms/${roomId}`, function (message) {
+                    console.log("Received message:", message.body);
+                    var userMessage = JSON.parse(message.body);
+
+                    addUserToList("connectToRoom: ",userMessage.userId);
+                });
+                stompClient.subscribe('/chat/send/' + chatMessage.roomId, (message) => {
+                    console.log("Received message:", message);
+                });
+
+                resolve(); // 연결이 완료되면 Promise를 성공 상태로 설정
+            }, function (error) {
+                console.error("Failed to connect:", error);
+                reject(error); // 연결 실패 시 Promise를 실패 상태로 설정
+            });
         });
     }
 
-    function addUserToList(userId) {
+    function addUserToList(str,userId) {
         const userList = document.getElementById("user-list");
         const userElement = document.createElement("li");
         userElement.textContent = userId;
         userList.appendChild(userElement);
+        console.log(str+userId);
     }
 
     function sendMessage() {
