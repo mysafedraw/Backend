@@ -1,6 +1,7 @@
 package io.ssafy.p.k11a405.backend.service;
 
 import io.ssafy.p.k11a405.backend.dto.*;
+import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.entity.Dialogue;
 import io.ssafy.p.k11a405.backend.entity.Scenario;
 import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;

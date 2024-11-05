@@ -1,6 +1,6 @@
 package io.ssafy.p.k11a405.backend.controller;
 
-import io.ssafy.p.k11a405.backend.dto.*;
+import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.service.GameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

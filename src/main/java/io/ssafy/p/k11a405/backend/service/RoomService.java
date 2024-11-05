@@ -4,7 +4,7 @@ import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
 import io.ssafy.p.k11a405.backend.dto.RoomEventMessage;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
-import io.ssafy.p.k11a405.backend.dto.StartGameResponseDTO;
+import io.ssafy.p.k11a405.backend.dto.game.StartGameResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
