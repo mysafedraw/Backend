@@ -45,8 +45,8 @@ public class RoomService {
         stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomId);
         stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
-        // 방 생성 후 방장 입장 및 구독
-//        joinRoom(roomId, ownerId);
+        String channelName = "rooms:" + roomId;
+        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
@@ -61,12 +61,9 @@ public class RoomService {
 //        long entryTime = System.currentTimeMillis() / 1000;
 //        stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
 
-        // Redis 채널 구독 설정
-        String channelName = "rooms:" + roomId;
-        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
-
         // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
+        String channelName = "rooms:" + roomId;
         genericMessagePublisher.publishString(channelName, entryMessage);
     }
 
