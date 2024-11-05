@@ -1,6 +1,8 @@
 package io.ssafy.p.k11a405.backend.service;
 
 import io.ssafy.p.k11a405.backend.dto.*;
+import io.ssafy.p.k11a405.backend.entity.Dialogue;
+import io.ssafy.p.k11a405.backend.entity.Scenario;
 import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +22,17 @@ public class GameService {
     private final MessagePublisher messagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
 
+    private final ScenarioService scenarioService;
+
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
         String channelName = redisKeyPrefix + startGameRequestDTO.roomId();
         // db에서 scenarioDialog 가져오기
+        Integer stageNumber = startGameRequestDTO.stageNumber();
+        String situationTag = ScenarioType.SITUATION.getKoreanName();
+        Scenario scenario = scenarioService.findScenarioByStageAndSituation(stageNumber, situationTag);
+        Dialogue dialogue = scenario.getDialogues().get(0);
 
-        String tmpScenarioDialog = "헉 불이났어요!!";
-        StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(tmpScenarioDialog, GameAction.GAME_START);
+        StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(dialogue.getSituationDialogue(), GameAction.GAME_START);
         messagePublisher.publish(channelName, startGameResponseDTO);
     }
 
