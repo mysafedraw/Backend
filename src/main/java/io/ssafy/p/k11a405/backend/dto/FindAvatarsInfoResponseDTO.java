@@ -6,5 +6,6 @@ import lombok.Builder;
 public record FindAvatarsInfoResponseDTO(
         String feature,
         String name,
-        String assetImg
+        String assetImg,
+        String profileImg
 ) {}
