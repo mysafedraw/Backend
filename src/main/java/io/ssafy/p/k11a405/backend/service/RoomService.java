@@ -1,9 +1,10 @@
 package io.ssafy.p.k11a405.backend.service;
 
+import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
 import io.ssafy.p.k11a405.backend.dto.RoomEventMessage;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
-import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
 import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
+import io.ssafy.p.k11a405.backend.dto.StartGameResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -48,8 +48,10 @@ public class RoomService {
 
         String channelName = "rooms:" + roomId;
         String chatChannel = "chat:" + roomId;
+        String gameStartChannel = "games:start:" + roomId;
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
         redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
+        redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();

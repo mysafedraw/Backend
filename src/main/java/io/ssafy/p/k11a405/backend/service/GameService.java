@@ -25,7 +25,7 @@ public class GameService {
     private final ScenarioService scenarioService;
 
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
-        String channelName = redisKeyPrefix + startGameRequestDTO.roomId();
+        String channelName = redisKeyPrefix + "start:" + startGameRequestDTO.roomId();
         // db에서 scenarioDialog 가져오기
         Integer stageNumber = startGameRequestDTO.stageNumber();
         String situationTag = ScenarioType.SITUATION.getKoreanName();
