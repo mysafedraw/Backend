@@ -1,7 +1,12 @@
 package io.ssafy.p.k11a405.backend.service;
 
+import io.ssafy.p.k11a405.backend.dto.FindAssetValidationsRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.FindScenariosResponseDTO;
+import io.ssafy.p.k11a405.backend.entity.AssetValidations;
 import io.ssafy.p.k11a405.backend.entity.Scenarios;
+import io.ssafy.p.k11a405.backend.exception.BusinessException;
+import io.ssafy.p.k11a405.backend.exception.ErrorCode;
+import io.ssafy.p.k11a405.backend.repository.AssetValidationRepository;
 import io.ssafy.p.k11a405.backend.repository.ScenarioRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +18,7 @@ import java.util.List;
 public class ScenarioService {
 
     private final ScenarioRepository scenarioRepository;
+    private final AssetValidationRepository assetValidationRepository;
 
     @Transactional
     public List<FindScenariosResponseDTO> findScenarioList() {
@@ -25,5 +31,11 @@ public class ScenarioService {
                         .build()).toList();
     }
 
+    @Transactional
+    public Boolean findAssetValidations(int stage, String assetName, int scenarioId) {
+        Scenarios scenario = scenarioRepository.findById(scenarioId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCENARIO_NOT_FOUND));
 
+        return assetValidationRepository.findByScenarioIdAndStageAndAssetName(scenario, stage, assetName).getIsCorrect();
+    }
 }
