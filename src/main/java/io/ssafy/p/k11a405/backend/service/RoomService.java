@@ -46,7 +46,7 @@ public class RoomService {
         stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
         // 방 생성 후 방장 입장 및 구독
-        joinRoom(roomId, ownerId);
+//        joinRoom(roomId, ownerId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
