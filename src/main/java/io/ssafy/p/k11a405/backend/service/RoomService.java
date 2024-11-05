@@ -3,6 +3,7 @@ package io.ssafy.p.k11a405.backend.service;
 import io.ssafy.p.k11a405.backend.dto.RoomEventMessage;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
 import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
+import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,9 @@ public class RoomService {
         stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
         String channelName = "rooms:" + roomId;
+        String chatChannel = "chat:" + roomId;
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
+        redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
