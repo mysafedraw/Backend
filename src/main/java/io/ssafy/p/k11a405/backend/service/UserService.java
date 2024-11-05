@@ -11,6 +11,11 @@ import java.util.UUID;
 @Service
 public class UserService {
 
+    private final String idField = "id";
+    private final String avatarIdField = "avatarId";
+    private final String nicknameField = "nickname";
+    private final String avatarProfileImgField = "avatarProfileImg";
+
     private final StringRedisTemplate stringRedisTemplate;
     private final AvatarService avatarService;
 
@@ -21,24 +26,24 @@ public class UserService {
         String userKey = "user:" + userId;
         FindAvatarsInfoResponseDTO avatarInfo = avatarService.findAvatarInfo(avatarId);
         // Redis에 유저 데이터 저장
-        stringRedisTemplate.opsForHash().put(userKey, "id", userId);
-        stringRedisTemplate.opsForHash().put(userKey, "nickname", nickname);
-        stringRedisTemplate.opsForHash().put(userKey, "avatarId", String.valueOf(avatarId)); // 아바타 id 저장
-        stringRedisTemplate.opsForHash().put(userKey, "avatarProfileImg", avatarInfo.profileImg());
+        stringRedisTemplate.opsForHash().put(userKey, idField, userId);
+        stringRedisTemplate.opsForHash().put(userKey, nicknameField, nickname);
+        stringRedisTemplate.opsForHash().put(userKey, avatarIdField, String.valueOf(avatarId)); // 아바타 id 저장
+        stringRedisTemplate.opsForHash().put(userKey, avatarProfileImgField, avatarInfo.profileImg());
 
         return new UserResponseDTO(userId, nickname, avatarInfo.profileImg()); // 생성된 유저 ID 반환
     }
 
     public UserResponseDTO updateNickname(String nickname, String userId) {
         String userKey = generateUserKey(userId);
-        stringRedisTemplate.opsForHash().put(userKey, "nickname", nickname);
+        stringRedisTemplate.opsForHash().put(userKey, nicknameField, nickname);
         return getUserInfoByUserId(userId);
     }
 
     private UserResponseDTO getUserInfoByUserId(String userId) {
         String userKey = generateUserKey(userId);
-        String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, "nickname"));
-        String profileImg = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, "avatarProfileImg"));
+        String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, nicknameField));
+        String profileImg = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, avatarProfileImgField);
         return new UserResponseDTO(userId, nickname, profileImg);
     }
 
