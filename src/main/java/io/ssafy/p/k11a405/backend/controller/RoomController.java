@@ -17,6 +17,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,8 +25,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/rooms")
+//@RestController
+@Controller
+@RequestMapping
 @RequiredArgsConstructor
 @Slf4j
 public class RoomController {
@@ -45,22 +47,21 @@ public class RoomController {
     }
     */
 
-    @PostMapping
+    @PostMapping("/api/rooms")
     public ResponseEntity<RoomResponseDTO> createRoom(@RequestBody RoomRequestDTO roomRequestDTO) {
         RoomResponseDTO roomResponse = roomService.createRoom(roomRequestDTO.hostId());
         return ResponseEntity.ok(roomResponse);
     }
 
-    @PostMapping("/join")
+    @PostMapping("/api/rooms/join")
     public ResponseEntity<List<String>> getAllUsersInRoom(@RequestBody RoomJoinRequestDTO roomJoinRequestDTO) {
         roomService.addUser(roomJoinRequestDTO.roomId(), roomJoinRequestDTO.userId());
         List<String> users = roomService.getAllUsersInRoom(roomJoinRequestDTO.roomId());
         return ResponseEntity.ok(users);
     }
 
-    @MessageMapping("/{roomId}/join")
-//    @SendTo("/topic/rooms/{roomId}")
-    public void joinRoom(@DestinationVariable String roomId, RoomJoinRequestDTO roomJoinRequestDTO) {
-        roomService.joinRoom(roomId, roomJoinRequestDTO.userId());
+    @MessageMapping("/join")
+    public void joinRoom(RoomJoinRequestDTO roomJoinRequestDTO) {
+        roomService.joinRoom(roomJoinRequestDTO.roomId(), roomJoinRequestDTO.userId());
     }
 }
