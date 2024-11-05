@@ -57,9 +57,9 @@ public class RoomService {
 
     public void joinRoom(String roomId, String userId) {
 //        // Redis에 유저 입장 시간 기록
-//        String userKey = "rooms:" + roomId + ":users";
-//        long entryTime = System.currentTimeMillis() / 1000;
-//        stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
+        String userKey = "rooms:" + roomId + ":users";
+        long entryTime = System.currentTimeMillis() / 1000;
+        stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
 
         // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
