@@ -6,6 +6,21 @@ pipeline {
     }
 
     stages {
+        stage('application.yml file copy') {
+            steps {
+                script {
+                    dir('backend') {
+                        withCredentials([file(credentialsId: 'application-yml', variable: 'APPLICATION_YML')]) {
+                            sh '''
+                            # application.yml 파일을 현재 작업 디렉토리로 복사
+                            cp $APPLICATION_YML ./src/main/resources/application.yml
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build Spring Boot App') {
             steps {
                 script {
