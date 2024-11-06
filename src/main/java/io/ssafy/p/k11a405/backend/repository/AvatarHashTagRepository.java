@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface AvatarHashTagRepository extends JpaRepository<AvatarHashTag, AvatarHashTagId> {
+
     @Query(value = "SELECT * FROM avatar_hash_tag WHERE avatars_id = :avatarsId", nativeQuery = true)
     List<AvatarHashTag> findByAvatarsId(Integer avatarsId);
 }
