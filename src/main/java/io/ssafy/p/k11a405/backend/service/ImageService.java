@@ -40,10 +40,10 @@ public class ImageService {
         stringRedisTemplate.opsForHash().put(userKey, "drawingSrc", drawingSrc);
     }
 
-    private String uploadImage(MultipartFile image) {
+    private String uploadImage(MultipartFile image, String path) {
         //image 파일 확장자 검사
         this.validateImageFileExtension(image.getOriginalFilename());
-        return this.uploadToS3(image);
+        return this.uploadToS3(image, path);
     }
 
     private void validateImageFileExtension(String fileName) {
@@ -59,10 +59,10 @@ public class ImageService {
         if (!allowedExtentionList.contains(extention)) throw new BusinessException(ErrorCode.S3Exception);
     }
 
-    private String uploadToS3(MultipartFile image) {
+    private String uploadToS3(MultipartFile image, String path) {
         String originalFilename = image.getOriginalFilename();
         String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String s3Filename = UUID.randomUUID().toString().substring(0,10) + originalFilename;
+        String s3Filename = path + "/" + UUID.randomUUID().toString().substring(0,10) + originalFilename;
         String url = "";
 
         try {
