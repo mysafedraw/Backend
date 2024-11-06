@@ -54,7 +54,7 @@ public class RoomService {
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
         redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
         redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(gameStartChannel, ExplainResponseDTO.class, "/games/" + roomId);
+        redisSubscriber.subscribeToChannel(gameExplainQueue, ExplainResponseDTO.class, "/games/" + roomId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
