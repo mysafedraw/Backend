@@ -137,8 +137,7 @@ public class GameService {
         String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(key, nicknameField));
         AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, idField)));
         String drawSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, drawSrcField));
-        String avatarsImgSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, avatarIdField));
-
+        String avatarsImgSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, avatarProfileImgField));
 
         return AnswerStatusResponseDTO.builder()
                 .userId(userId)
