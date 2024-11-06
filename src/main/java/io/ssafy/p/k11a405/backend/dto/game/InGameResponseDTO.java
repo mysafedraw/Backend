@@ -5,6 +5,6 @@ import lombok.Builder;
 @Builder
 public record InGameResponseDTO(
         String userId,
-        boolean isCorrect,
+        AnswerStatus isCorrect,
         GameAction action
 ) {}

@@ -4,6 +4,7 @@ import io.ssafy.p.k11a405.backend.dto.*;
 import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.entity.DialogueSituation;
 import io.ssafy.p.k11a405.backend.entity.Dialogue;
+import io.ssafy.p.k11a405.backend.exception.BusinessException;
 import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -85,15 +86,21 @@ public class GameService {
 
     public void checkAnswer(String roomId, String userId, Integer scenarioId, String userAnswer, Integer stageNumber) {
         // 정답 체크
-        Boolean isCorrect = scenarioService.findAssetValidations(stageNumber, userAnswer, scenarioId);
+        AnswerStatus answerStatus;
+        try {
+            Boolean isCorrect = scenarioService.findAssetValidations(stageNumber, userAnswer, scenarioId);
+            answerStatus = AnswerStatus.getAnswerStatus(isCorrect);
+        } catch (BusinessException e) {
+            answerStatus = AnswerStatus.INCORRECT_ANSWER;
+        }
 
         // 유저 정답 여부 redis 저장
         String userKey = "user:" + userId;
-        stringRedisTemplate.opsForHash().put(userKey, "isCorrect", isCorrect.toString());
+        stringRedisTemplate.opsForHash().put(userKey, "isCorrect", answerStatus);
 
         InGameResponseDTO inGameResponseDTO = InGameResponseDTO.builder()
                 .userId(userId)
-                .isCorrect(isCorrect)
+                .isCorrect(answerStatus)
                 .action(GameAction.CHECK_ANSWER)
                 .build();
         // 해당 유저에게 다이렉트로 정답 여부 전송
