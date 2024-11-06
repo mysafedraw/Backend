@@ -15,9 +15,9 @@ public class ChatService {
 
     private final DateUtil dateUtil;
 
-    public void sendMessage(String requestDestination, SendChatRequestDTO sendChatRequestDTO) {
+    public void sendMessage(SendChatRequestDTO sendChatRequestDTO) {
         String sentAt = dateUtil.getChatFormatTime();
-        String channel = requestDestination + "/" + sendChatRequestDTO.roomId();
+        String channel = "chat:" + sendChatRequestDTO.roomId();
         SendChatResponseDTO sendChatResponseDTO = SendChatResponseDTO.builder()
                 .sendChatRequestDTO(sendChatRequestDTO).sentAt(sentAt).build();
         messagePublisher.publish(channel, sendChatResponseDTO);

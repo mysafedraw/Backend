@@ -1,8 +1,7 @@
 package io.ssafy.p.k11a405.backend.dto;
 
-public record UserResponseDTO(
+public record UpdateUserRequestDTO(
         String userId,
         String nickname,
-        String avatarImg
+        Integer avatarId
 ) {}
-
