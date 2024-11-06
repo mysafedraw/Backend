@@ -63,7 +63,8 @@ public class GameService {
         stringRedisTemplate.opsForSet().add(enqueuedKey, explainRequestDTO.userId());
         stringRedisTemplate.opsForList().rightPush(queueKey, explainRequestDTO.userId());
         List<String> userIds = stringRedisTemplate.opsForList().range(queueKey, 0, -1);
-        ExplainResponseDTO explainResponseDTO = new ExplainResponseDTO(userIds, GameAction.ADD_EXPLAIN_QUEUE);
+        List<AnswerStatusResponseDTO> answerStatuses = userIds.stream().map(this::getUserAnswerStatus).toList();
+        ExplainResponseDTO explainResponseDTO = new ExplainResponseDTO(answerStatuses, GameAction.ADD_EXPLAIN_QUEUE);
         messagePublisher.publish(channelName, explainResponseDTO);
     }
 
