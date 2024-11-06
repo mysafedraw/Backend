@@ -23,7 +23,7 @@ public class GameService {
 
     private final String redisKeyPrefix = "games:";
     private final String idField = "id";
-    private final String avatarIdField = "avatarId";
+    private final String isCorrectField = "isCorrect";
     private final String nicknameField = "nickname";
     private final String avatarProfileImgField = "avatarProfileImg";
     private final String drawSrcField = "drawSrc";
@@ -101,7 +101,7 @@ public class GameService {
 
         // 유저 정답 여부 redis 저장
         String userKey = "user:" + userId;
-        stringRedisTemplate.opsForHash().put(userKey, "isCorrect", answerStatus);
+        stringRedisTemplate.opsForHash().put(userKey, isCorrectField, answerStatus);
 
         InGameResponseDTO inGameResponseDTO = InGameResponseDTO.builder()
                 .userId(userId)
@@ -136,7 +136,7 @@ public class GameService {
     private AnswerStatusResponseDTO getUserAnswerStatus(String userId) {
         String key = "user:" + userId;
         String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(key, nicknameField));
-        AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, idField)));
+        AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, isCorrectField)));
         String drawSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, drawSrcField));
         String avatarsImgSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, avatarProfileImgField));
 
