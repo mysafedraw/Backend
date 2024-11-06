@@ -63,6 +63,7 @@ public class AvatarService {
                 .assetImg(avatars.getProfileImg())
                 .feature(avatars.getFeature())
                 .name(avatars.getName())
+                .profileImg(avatars.getProfileImg())
                 .build();
     }
 }

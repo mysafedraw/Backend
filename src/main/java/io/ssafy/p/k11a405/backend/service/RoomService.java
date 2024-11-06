@@ -1,8 +1,10 @@
 package io.ssafy.p.k11a405.backend.service;
 
+import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
 import io.ssafy.p.k11a405.backend.dto.RoomEventMessage;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
-import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
+import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
+import io.ssafy.p.k11a405.backend.dto.game.StartGameResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +14,6 @@ import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -31,11 +32,10 @@ public class RoomService {
     // 채팅방 구독 메서드
     public void subscribeToRoomChannel(String roomId) {
         String channelName = "rooms:" + roomId;
-        String destinationPath = "/topic/rooms/" + roomId;
+        String destinationPath = "/rooms/" + roomId;
 
         // RedisSubscriber의 메서드로 구독 설정
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, destinationPath);
-        log.info("Subscribed to room channel: {}", channelName);
     }
 
     public RoomResponseDTO createRoom(String ownerId) {
@@ -44,12 +44,14 @@ public class RoomService {
 
         // Redis에 방 정보 저장
         stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomId);
-        stringRedisTemplate.opsForHash().put(roomKey, "ownerId", ownerId);
+        stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
-        System.out.println("Room created with ID: " + roomId);
-
-        // 방 생성 후 방장 입장 및 구독
-        joinRoom(roomId, ownerId);
+        String channelName = "rooms:" + roomId;
+        String chatChannel = "chat:" + roomId;
+        String gameStartChannel = "games:start:" + roomId;
+        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
+        redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
+        redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
@@ -60,19 +62,21 @@ public class RoomService {
 
     public void joinRoom(String roomId, String userId) {
 //        // Redis에 유저 입장 시간 기록
-//        String userKey = "rooms:" + roomId + ":users";
-//        long entryTime = System.currentTimeMillis() / 1000;
-//        stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
-
-        // Redis 채널 구독 설정
-        String channelName = "rooms:" + roomId;
-        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/topic/rooms/" + roomId);
-        log.info("Subscribed to room channel joinRoom: {}", channelName);
+        addUser(roomId, userId);
 
         // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
+        String channelName = "rooms:" + roomId;
         genericMessagePublisher.publishString(channelName, entryMessage);
-        log.info("Message sent to joinRoom {}: {}", "/topic/rooms/" + roomId, entryMessage);
+    }
+
+    public void leaveRoom(String roomId, String userId) {
+
+        // 퇴장 메시지를 Redis 채널에 발행
+        RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "leave");
+        leaveUser(roomId, userId);
+        String channelName = "rooms:" + roomId;
+        genericMessagePublisher.publishString(channelName, entryMessage);
     }
 
     public List<String> getAllUsersInRoom(String roomId) {
@@ -92,5 +96,10 @@ public class RoomService {
         String userKey = "rooms:" + roomId + ":users";
         long entryTime = System.currentTimeMillis() / 1000;
         stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
+    }
+
+    public void leaveUser(String roomId, String userId) {
+        String userKey = "rooms:" + roomId + ":users";
+        stringRedisTemplate.opsForZSet().remove(userKey, userId);
     }
 }
