@@ -2,8 +2,8 @@ package io.ssafy.p.k11a405.backend.service;
 
 import io.ssafy.p.k11a405.backend.dto.*;
 import io.ssafy.p.k11a405.backend.dto.game.*;
+import io.ssafy.p.k11a405.backend.entity.DialogueSituation;
 import io.ssafy.p.k11a405.backend.entity.Dialogue;
-import io.ssafy.p.k11a405.backend.entity.Scenario;
 import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,17 +23,17 @@ public class GameService {
     private final MessagePublisher messagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
 
-    private final ScenarioService scenarioService;
+    private final DialogueService dialogueService;
 
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
         String channelName = redisKeyPrefix + "start:" + startGameRequestDTO.roomId();
         // db에서 scenarioDialog 가져오기
         Integer stageNumber = startGameRequestDTO.stageNumber();
         String situationTag = ScenarioType.SITUATION.getKoreanName();
-        Scenario scenario = scenarioService.findScenarioByStageAndSituation(stageNumber, situationTag);
-        Dialogue dialogue = scenario.getDialogues().get(0);
+        Dialogue dialogue = dialogueService.findScenarioByStageAndSituation(stageNumber, situationTag);
+        DialogueSituation dialogueSituation = dialogue.getDialogues().get(0);
 
-        StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(dialogue.getSituationDialogue(), GameAction.GAME_START);
+        StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(dialogueSituation.getSituationDialogue(), GameAction.GAME_START);
         messagePublisher.publish(channelName, startGameResponseDTO);
     }
 
