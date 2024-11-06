@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,11 @@ import java.util.List;
 public class GameService {
 
     private final String redisKeyPrefix = "games:";
+    private final String idField = "id";
+    private final String avatarIdField = "avatarId";
+    private final String nicknameField = "nickname";
+    private final String avatarProfileImgField = "avatarProfileImg";
+    private final String drawSrcField = "drawSrc";
 
     private final MessagePublisher messagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
@@ -71,14 +77,12 @@ public class GameService {
     }
 
     public void checkAllAnswers(String roomId) {
-        List<AnswerStatusResponseDTO> answerStatuses = new ArrayList<>();
-        answerStatuses.add(AnswerStatusResponseDTO.builder()
-                        .avatarsImgSrc("https://cdn.inflearn.com/public/main/profile/default_profile.png")
-                        .drawSrc("https://cdn.inflearn.com/public/main_sliders/1c333cda-3dcf-46c4-be01-46b6f99ae750/I_O_python_1.png")
-                        .isCorrect(true)
-                        .nickname("하이")
-                        .userId("userID")
-                .build());
+
+        // 각 유저의 정답을 담아야 한다. 1. 유저 아이디 리스트 조회 2. 유저 아이디에 맞는 이미지 생성
+        String userKey = "rooms:" + roomId + ":users";
+        Set<String> userIds = stringRedisTemplate.opsForZSet().range(userKey, 0, -1);
+        List<AnswerStatusResponseDTO> answerStatuses = userIds.stream().map(this::getUserAnswerStatus).toList();
+
         CheckAllAnswersResponseDTO checkAllAnswersResponseDTO = new CheckAllAnswersResponseDTO(answerStatuses, GameAction.CHECK_ALL_ANSWERS);
         String channelName = redisKeyPrefix + roomId;
         messagePublisher.publish(channelName, checkAllAnswersResponseDTO);
@@ -126,5 +130,22 @@ public class GameService {
         String hostId = "hostId";
         String channelName = "rooms:" + hostId + ":users";
         messagePublisher.publish(channelName, confirmResponseDTO);
+    }
+
+    private AnswerStatusResponseDTO getUserAnswerStatus(String userId) {
+        String key = "user:" + userId;
+        String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(key, nicknameField));
+        AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, idField)));
+        String drawSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, drawSrcField));
+        String avatarsImgSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, avatarIdField));
+
+
+        return AnswerStatusResponseDTO.builder()
+                .userId(userId)
+                .nickname(nickname)
+                .isCorrect(isCorrect)
+                .drawSrc(drawSrc)
+                .avatarsImgSrc(avatarsImgSrc)
+                .build();
     }
 }

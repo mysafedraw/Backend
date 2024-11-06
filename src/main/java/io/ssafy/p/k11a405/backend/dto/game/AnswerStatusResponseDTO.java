@@ -6,7 +6,7 @@ import lombok.Builder;
 public record AnswerStatusResponseDTO(
         String userId,
         String nickname,
-        boolean isCorrect,
+        AnswerStatus isCorrect,
         String drawSrc,
         String avatarsImgSrc
 ) {
