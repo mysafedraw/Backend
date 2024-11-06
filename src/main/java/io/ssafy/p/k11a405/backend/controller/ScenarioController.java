@@ -39,5 +39,4 @@ public class ScenarioController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(DataResponse.of("단계별 에셋 정답 조회에 성공했습니다. 정답: True, 오답: False", isCorrect));
     }
-
 }

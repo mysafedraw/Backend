@@ -36,6 +36,9 @@ public class ScenarioService {
         Scenarios scenario = scenarioRepository.findById(scenarioId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SCENARIO_NOT_FOUND));
 
-        return assetValidationRepository.findByScenarioIdAndStageAndAssetName(scenario, stage, assetName).getIsCorrect();
+        AssetValidations assetValidations = assetValidationRepository.findByScenarioIdAndStageAndAssetName(scenario, stage, assetName);
+
+        if(assetValidations == null) throw new BusinessException(ErrorCode.ASSET_NOT_FOUND);
+        return assetValidations.getIsCorrect();
     }
 }
