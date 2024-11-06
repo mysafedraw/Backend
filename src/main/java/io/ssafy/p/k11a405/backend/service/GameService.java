@@ -48,7 +48,7 @@ public class GameService {
     }
 
     public void addToExplanationQueue(ExplainRequestDTO explainRequestDTO) {
-        String channelName = redisKeyPrefix + explainRequestDTO.roomId();
+        String channelName = redisKeyPrefix + "explainQueue:" + explainRequestDTO.roomId();
         String enqueuedKey = redisKeyPrefix + explainRequestDTO.roomId() + ":enqueued";
         String queueKey = redisKeyPrefix + explainRequestDTO.roomId() + ":explanationQueue";
 
