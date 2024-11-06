@@ -70,7 +70,7 @@ public class GameService {
         messagePublisher.publish(channelName, haveASayResponseDTO);
     }
 
-    public void checkAllAnswers(CheckAllAnswersRequestDTO checkAllAnswersRequestDTO) {
+    public void checkAllAnswers(String roomId) {
         List<AnswerStatusResponseDTO> answerStatuses = new ArrayList<>();
         answerStatuses.add(AnswerStatusResponseDTO.builder()
                         .avatarsImgSrc("https://cdn.inflearn.com/public/main/profile/default_profile.png")
@@ -80,7 +80,7 @@ public class GameService {
                         .userId("userID")
                 .build());
         CheckAllAnswersResponseDTO checkAllAnswersResponseDTO = new CheckAllAnswersResponseDTO(answerStatuses, GameAction.CHECK_ALL_ANSWERS);
-        String channelName = redisKeyPrefix + checkAllAnswersRequestDTO.roomId();
+        String channelName = redisKeyPrefix + roomId;
         messagePublisher.publish(channelName, checkAllAnswersResponseDTO);
     }
 

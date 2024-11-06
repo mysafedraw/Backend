@@ -31,7 +31,7 @@ public class GameController {
 
     @MessageMapping("/answers")
     public void checkAllAnswers(CheckAllAnswersRequestDTO checkAllAnswersRequestDTO) {
-        gameService.checkAllAnswers(checkAllAnswersRequestDTO);
+        gameService.checkAllAnswers(checkAllAnswersRequestDTO.roomId());
     }
 
     @MessageMapping("/answer")
