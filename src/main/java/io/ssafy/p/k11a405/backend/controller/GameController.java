@@ -5,7 +5,6 @@ import io.ssafy.p.k11a405.backend.service.GameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Controller;
 public class GameController {
 
     private final GameService gameService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @MessageMapping("/start")
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
@@ -39,7 +37,12 @@ public class GameController {
     @MessageMapping("/answer")
     public void checkAnswer(CheckAnswerRequestDTO checkAnswerRequestDTO) {
         String userId = checkAnswerRequestDTO.userId();
-        simpMessagingTemplate.convertAndSend("/games/" + userId, "response");
+        String roomId = checkAnswerRequestDTO.roomId();
+        Integer scenarioId = checkAnswerRequestDTO.scenarioId();
+        String userAnswer = checkAnswerRequestDTO.answer();
+        Integer stageNumber = checkAnswerRequestDTO.stageNumber();
+        gameService.checkAnswer(roomId, userId, scenarioId, userAnswer, stageNumber);
+
     }
 
     @MessageMapping("/vote")

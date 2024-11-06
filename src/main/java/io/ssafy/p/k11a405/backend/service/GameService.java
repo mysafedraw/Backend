@@ -8,6 +8,7 @@ import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,8 +23,10 @@ public class GameService {
 
     private final MessagePublisher messagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     private final DialogueService dialogueService;
+    private final ScenarioService scenarioService;
 
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
         String channelName = redisKeyPrefix + "start:" + startGameRequestDTO.roomId();
@@ -80,16 +83,21 @@ public class GameService {
         messagePublisher.publish(channelName, checkAllAnswersResponseDTO);
     }
 
-    public void checkAnswer(String roomId, String userId, String scenarioId, String userAnswer) {
+    public void checkAnswer(String roomId, String userId, Integer scenarioId, String userAnswer, Integer stageNumber) {
         // 정답 체크
+        Boolean isCorrect = scenarioService.findAssetValidations(stageNumber, userAnswer, scenarioId);
 
         // 유저 정답 여부 redis 저장
         String userKey = "user:" + userId;
-        stringRedisTemplate.opsForHash().put(userKey, "isCorrect", true);
+        stringRedisTemplate.opsForHash().put(userKey, "isCorrect", isCorrect.toString());
 
-        // 해당 유저에게 정답 여부 전송
-        String channelName = "rooms:" + userId + ":" + "users";
-        messagePublisher.publish(channelName, new CheckAnswerResponseDTO(userId, true));
+        InGameResponseDTO inGameResponseDTO = InGameResponseDTO.builder()
+                .userId(userId)
+                .isCorrect(isCorrect)
+                .action(GameAction.CHECK_ANSWER)
+                .build();
+        // 해당 유저에게 다이렉트로 정답 여부 전송
+        simpMessagingTemplate.convertAndSend("/games/" + userId, inGameResponseDTO);
     }
 
     public void vote(String roomId, boolean isAgreed, String userId) {
