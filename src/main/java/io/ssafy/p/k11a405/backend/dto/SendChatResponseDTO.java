@@ -7,11 +7,12 @@ public record SendChatResponseDTO(
         String roomId,
         String content,
         String nickname,
-        String sentAt
+        String sentAt,
+        ChatAction action
 ) {
 
     @Builder
-    public SendChatResponseDTO(SendChatRequestDTO sendChatRequestDTO, String sentAt) {
-        this(sendChatRequestDTO.senderId(), sendChatRequestDTO.roomId(), sendChatRequestDTO.content(), sendChatRequestDTO.nickname(), sentAt);
+    public SendChatResponseDTO(SendChatRequestDTO sendChatRequestDTO, String sentAt, ChatAction action) {
+        this(sendChatRequestDTO.senderId(), sendChatRequestDTO.roomId(), sendChatRequestDTO.content(), sendChatRequestDTO.nickname(), sentAt, action);
     }
 }
