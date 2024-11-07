@@ -4,5 +4,5 @@ import java.util.List;
 
 public record CheckAllAnswersResponseDTO(
         List<AnswerStatusResponseDTO> users,
-        GameAction gameAction
+        GameAction action
 ) {}
