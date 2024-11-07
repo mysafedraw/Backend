@@ -26,7 +26,7 @@ public class GameService {
     private final String isCorrectField = "isCorrect";
     private final String nicknameField = "nickname";
     private final String avatarProfileImgField = "avatarProfileImg";
-    private final String drawSrcField = "drawSrc";
+    private final String drawSrcField = "drawingSrc";
 
     private final GenericMessagePublisher genericMessagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
