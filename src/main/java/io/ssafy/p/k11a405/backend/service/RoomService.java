@@ -50,16 +50,7 @@ public class RoomService {
         stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomId);
         stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
-        String channelName = "rooms:" + roomId;
-        String chatChannel = "chat:" + roomId;
-        String gameStartChannel = "games:" + roomId + ":start";
-        String gameExplainQueue = "games:" + roomId + ":explainQueue";
-        String gameAllAnswersChannel = "games:" + roomId + ":allAnswers";
-        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
-        redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
-        redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(gameExplainQueue, ExplainResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(gameAllAnswersChannel, CheckAllAnswersResponseDTO.class, "/games/" + roomId);
+        subscribeChannelsOnRoom(roomId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
@@ -109,5 +100,18 @@ public class RoomService {
     public void leaveUser(String roomId, String userId) {
         String userKey = "rooms:" + roomId + ":users";
         stringRedisTemplate.opsForZSet().remove(userKey, userId);
+    }
+
+    private void subscribeChannelsOnRoom(String roomId) {
+        String channelName = "rooms:" + roomId;
+        String chatChannel = "chat:" + roomId;
+        String gameStartChannel = "games:" + roomId + ":start";
+        String gameExplainQueue = "games:" + roomId + ":explainQueue";
+        String gameAllAnswersChannel = "games:" + roomId + ":allAnswers";
+        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
+        redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
+        redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
+        redisSubscriber.subscribeToChannel(gameExplainQueue, ExplainResponseDTO.class, "/games/" + roomId);
+        redisSubscriber.subscribeToChannel(gameAllAnswersChannel, CheckAllAnswersResponseDTO.class, "/games/" + roomId);
     }
 }
