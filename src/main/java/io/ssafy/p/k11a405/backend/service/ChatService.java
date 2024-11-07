@@ -1,5 +1,6 @@
 package io.ssafy.p.k11a405.backend.service;
 
+import io.ssafy.p.k11a405.backend.dto.ChatAction;
 import io.ssafy.p.k11a405.backend.dto.SendChatRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.MessagePublisher;
@@ -19,7 +20,7 @@ public class ChatService {
         String sentAt = dateUtil.getChatFormatTime();
         String channel = "chat:" + sendChatRequestDTO.roomId();
         SendChatResponseDTO sendChatResponseDTO = SendChatResponseDTO.builder()
-                .sendChatRequestDTO(sendChatRequestDTO).sentAt(sentAt).build();
+                .sendChatRequestDTO(sendChatRequestDTO).sentAt(sentAt).action(ChatAction.CHAT_MESSAGE).build();
         messagePublisher.publish(channel, sendChatResponseDTO);
     }
 }
