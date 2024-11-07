@@ -48,6 +48,9 @@ public class GameService {
     }
 
     public void addToExplanationQueue(ExplainRequestDTO explainRequestDTO) {
+        if (correctUser(explainRequestDTO.userId())) {
+            return;
+        }
         String channelName = redisKeyPrefix + explainRequestDTO.roomId() + ":explainQueue";
         String enqueuedKey = redisKeyPrefix + explainRequestDTO.roomId() + ":enqueued";
         String queueKey = redisKeyPrefix + explainRequestDTO.roomId() + ":explanationQueue";
@@ -148,5 +151,11 @@ public class GameService {
                 .drawingSrc(drawingSrc)
                 .avatarsImgSrc(avatarsImgSrc)
                 .build();
+    }
+
+    private boolean correctUser(String userId) {
+        String key = "user:" + userId;
+        AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, isCorrectField)));
+        return AnswerStatus.CORRECT_ANSWER.equals(isCorrect);
     }
 }
