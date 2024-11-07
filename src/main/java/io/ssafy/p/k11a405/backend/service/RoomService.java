@@ -52,9 +52,9 @@ public class RoomService {
 
         String channelName = "rooms:" + roomId;
         String chatChannel = "chat:" + roomId;
-        String gameStartChannel = "games:start:" + roomId;
-        String gameExplainQueue = "games:explainQueue:" + roomId;
-        String gameAllAnswersChannel = "games:allAnswers:" + roomId;
+        String gameStartChannel = "games:" + roomId + ":start";
+        String gameExplainQueue = "games:" + roomId + ":explainQueue";
+        String gameAllAnswersChannel = "games:" + roomId + ":allAnswers";
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
         redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
         redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
