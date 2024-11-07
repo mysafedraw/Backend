@@ -17,6 +17,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -41,7 +42,8 @@ public class RoomService {
     }
 
     public RoomResponseDTO createRoom(String ownerId) {
-        String roomId = UUID.randomUUID().toString();
+        Random random = new Random(System.currentTimeMillis());
+        String roomId = String.valueOf(random.nextLong() % 1000000L);
         String roomKey = "rooms:" + roomId;
 
         // Redis에 방 정보 저장
