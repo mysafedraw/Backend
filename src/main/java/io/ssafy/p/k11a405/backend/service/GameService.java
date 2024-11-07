@@ -138,14 +138,14 @@ public class GameService {
         String key = "user:" + userId;
         String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(key, nicknameField));
         AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, isCorrectField)));
-        String drawSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, drawSrcField));
+        String drawingSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, drawSrcField));
         String avatarsImgSrc = String.valueOf(stringRedisTemplate.opsForHash().get(key, avatarProfileImgField));
 
         return AnswerStatusResponseDTO.builder()
                 .userId(userId)
                 .nickname(nickname)
                 .isCorrect(isCorrect)
-                .drawSrc(drawSrc)
+                .drawingSrc(drawingSrc)
                 .avatarsImgSrc(avatarsImgSrc)
                 .build();
     }

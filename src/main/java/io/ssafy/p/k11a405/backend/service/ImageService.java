@@ -26,7 +26,7 @@ import java.util.UUID;
 @Slf4j
 public class ImageService {
 
-    private final String drawSrcField = "drawSrc";
+    private final String drawSrcField = "drawingSrc";
 
     private final StringRedisTemplate stringRedisTemplate;
     private final AmazonS3 amazonS3;

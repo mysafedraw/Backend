@@ -7,7 +7,7 @@ public record AnswerStatusResponseDTO(
         String userId,
         String nickname,
         AnswerStatus isCorrect,
-        String drawSrc,
+        String drawingSrc,
         String avatarsImgSrc
 ) {
 }
