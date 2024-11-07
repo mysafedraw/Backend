@@ -36,7 +36,7 @@ public class GameService {
     private final ScenarioService scenarioService;
 
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
-        String channelName = redisKeyPrefix + "start:" + startGameRequestDTO.roomId();
+        String channelName = redisKeyPrefix + startGameRequestDTO.roomId() + ":start";
         // db에서 scenarioDialog 가져오기
         Integer stageNumber = startGameRequestDTO.stageNumber();
         String situationTag = ScenarioType.SITUATION.getKoreanName();
@@ -89,7 +89,7 @@ public class GameService {
 //        List<AnswerStatusResponseDTO> answerStatuses = userIds.stream().map(this::getUserAnswerStatus).toList();
 
         CheckAllAnswersResponseDTO checkAllAnswersResponseDTO = new CheckAllAnswersResponseDTO(answerStatuses, GameAction.CHECK_ALL_ANSWERS);
-        String channelName = redisKeyPrefix + "allAnswers:" + roomId;
+        String channelName = redisKeyPrefix + roomId + ":allAnswers";
         genericMessagePublisher.publishString(channelName, checkAllAnswersResponseDTO);
     }
 
