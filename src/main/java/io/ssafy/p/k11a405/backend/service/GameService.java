@@ -120,7 +120,7 @@ public class GameService {
         // 방장 아이디 가져오기
         String hostId = "123123";
         String channelName = "rooms:" + hostId + ":users";
-        genericMessagePublisher.publishString(channelName, new VoteResponseDTO(userId, isAgreed));
+        genericMessagePublisher.publishString(channelName, new VoteResponseDTO(userId, isAgreed, GameAction.VOTE));
     }
 
     public void confirmAnswer(String userId, boolean isConfirmed, String roomId) {
