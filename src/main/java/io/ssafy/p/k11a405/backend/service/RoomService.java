@@ -73,7 +73,6 @@ public class RoomService {
         EnterRoomResponseDTO enterRoomResponseDTO = new EnterRoomResponseDTO(host, users, RoomAction.ENTER_ROOM);
 
         String channelName = "rooms:" + roomId;
-        redisSubscriber.subscribeToChannel(channelName, EnterRoomResponseDTO.class, "/rooms/" + roomId);
         // 입장 메시지를 Redis 채널에 발행
         genericMessagePublisher.publishString(channelName, enterRoomResponseDTO);
     }
