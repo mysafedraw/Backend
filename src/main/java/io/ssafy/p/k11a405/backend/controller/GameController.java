@@ -59,4 +59,9 @@ public class GameController {
     public void endVote(EndVoteRequestDTO endVoteRequestDTO) {
         gameService.endVote(endVoteRequestDTO.roomId(), endVoteRequestDTO.userId());
     }
+
+    @MessageMapping("/drawing/start")
+    public void startDrawing(StartDrawingRequestDTO startDrawingRequestDTO) {
+        gameService.startDrawing(startDrawingRequestDTO.roomId());
+    }
 }
