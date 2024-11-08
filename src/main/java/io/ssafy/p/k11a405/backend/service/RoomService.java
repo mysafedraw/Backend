@@ -41,7 +41,7 @@ public class RoomService {
 
     public RoomResponseDTO createRoom(String ownerId) {
         Random random = new Random(System.currentTimeMillis());
-        String roomId = String.valueOf(random.nextLong() % 1000000L);
+        String roomId = String.valueOf(Math.abs(random.nextLong() % 1000000L));
         String roomKey = "rooms:" + roomId;
 
         // Redis에 방 정보 저장
