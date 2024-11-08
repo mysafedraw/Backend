@@ -68,6 +68,7 @@ public class RoomService {
         // 입장 메시지를 Redis 채널에 발행
         RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, RoomAction.ENTER_ROOM);
         String channelName = "rooms:" + roomId;
+        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
         genericMessagePublisher.publishString(channelName, entryMessage);
     }
 
