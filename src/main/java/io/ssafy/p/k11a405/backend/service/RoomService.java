@@ -2,10 +2,7 @@ package io.ssafy.p.k11a405.backend.service;
 
 import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
 import io.ssafy.p.k11a405.backend.dto.*;
-import io.ssafy.p.k11a405.backend.dto.game.CheckAllAnswersResponseDTO;
-import io.ssafy.p.k11a405.backend.dto.game.ExplainResponseDTO;
-import io.ssafy.p.k11a405.backend.dto.game.StartGameResponseDTO;
-import io.ssafy.p.k11a405.backend.dto.game.VoteResponseDTO;
+import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,11 +120,13 @@ public class RoomService {
         String gameStartChannel = "games:" + roomId + ":start";
         String gameExplainQueue = "games:" + roomId + ":explainQueue";
         String gameAllAnswersChannel = "games:" + roomId + ":allAnswers";
+        String voteEndChannel = "games:" + roomId + ":voteEnded";
         redisSubscriber.subscribeToChannel(channelName, EnterRoomResponseDTO.class, "/rooms/" + roomId);
         redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
         redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
         redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
         redisSubscriber.subscribeToChannel(gameExplainQueue, ExplainResponseDTO.class, "/games/" + roomId);
         redisSubscriber.subscribeToChannel(gameAllAnswersChannel, CheckAllAnswersResponseDTO.class, "/games/" + roomId);
+        redisSubscriber.subscribeToChannel(voteEndChannel, EndVoteResponseDTO.class, "/games/" + roomId);
     }
 }

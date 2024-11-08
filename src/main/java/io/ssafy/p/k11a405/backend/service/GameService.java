@@ -147,6 +147,13 @@ public class GameService {
         genericMessagePublisher.publishString(channelName, confirmResponseDTO);
     }
 
+    public void endVote(String roomId) {
+        String channelName = "games:" + roomId + ":voteEnded";
+        EndVoteResponseDTO endVoteResponseDTO = new EndVoteResponseDTO(GameAction.END_VOTE);
+
+        genericMessagePublisher.publishString(channelName, endVoteResponseDTO);
+    }
+
     private AnswerStatusResponseDTO getUserAnswerStatus(String userId) {
         String key = "user:" + userId;
         String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(key, nicknameField));
