@@ -34,6 +34,7 @@ public class GameService {
 
     private final DialogueService dialogueService;
     private final ScenarioService scenarioService;
+    private final RoomService roomService;
 
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
         String channelName = redisKeyPrefix + startGameRequestDTO.roomId() + ":start";
@@ -119,7 +120,7 @@ public class GameService {
 
     public void vote(String roomId, boolean isAgreed, String userId) {
         // 방장 아이디 가져오기
-        String hostId = "123123";
+        String hostId = roomService.getHostId(roomId);
         String channelName = "rooms:" + hostId + ":users";
         genericMessagePublisher.publishString(channelName, new VoteResponseDTO(userId, isAgreed, GameAction.VOTE));
     }

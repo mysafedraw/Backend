@@ -106,6 +106,11 @@ public class RoomService {
         stringRedisTemplate.opsForZSet().remove(userKey, userId);
     }
 
+    public String getHostId(String roomId) {
+        String key = "rooms:" + roomId;
+        return String.valueOf(stringRedisTemplate.opsForHash().get(key, "hostId"));
+    }
+
     private void subscribeChannelsOnRoom(String roomId) {
         String channelName = "rooms:" + roomId;
         String chatChannel = "chat:" + roomId;
