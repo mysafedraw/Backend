@@ -8,6 +8,7 @@ import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.game.CheckAllAnswersResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.game.ExplainResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.game.StartGameResponseDTO;
+import io.ssafy.p.k11a405.backend.dto.game.VoteResponseDTO;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,6 +97,8 @@ public class RoomService {
         String userKey = "rooms:" + roomId + ":users";
         long entryTime = System.currentTimeMillis() / 1000;
         stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
+
+        redisSubscriber.subscribeToChannel(userKey, VoteResponseDTO.class, "/users/" + userId);
     }
 
     public void leaveUser(String roomId, String userId) {
