@@ -1,10 +1,7 @@
 package io.ssafy.p.k11a405.backend.service;
 
 import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
-import io.ssafy.p.k11a405.backend.dto.RoomAction;
-import io.ssafy.p.k11a405.backend.dto.RoomEventMessage;
-import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
-import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
+import io.ssafy.p.k11a405.backend.dto.*;
 import io.ssafy.p.k11a405.backend.dto.game.CheckAllAnswersResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.game.ExplainResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.game.StartGameResponseDTO;
@@ -33,6 +30,8 @@ public class RoomService {
     private final RedisSubscriber redisSubscriber;  // RedisSubscriber 주입
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final GenericMessagePublisher genericMessagePublisher;
+
+    private final UserService userService;
 
     // 채팅방 구독 메서드
     public void subscribeToRoomChannel(String roomId) {
@@ -65,11 +64,18 @@ public class RoomService {
 //        // Redis에 유저 입장 시간 기록
         addUser(roomId, userId);
 
-        // 입장 메시지를 Redis 채널에 발행
-        RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, RoomAction.ENTER_ROOM);
+        List<String> userIds = getAllUsersInRoom(roomId);
+        List<UserResponseDTO> users = userIds.stream().map(userService::getUserInfoByUserId).toList();
+
+        String hostId = getHostId(roomId);
+        UserResponseDTO host = userService.getUserInfoByUserId(hostId);
+
+        EnterRoomResponseDTO enterRoomResponseDTO = new EnterRoomResponseDTO(host, users, RoomAction.ENTER_ROOM);
+
         String channelName = "rooms:" + roomId;
-        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
-        genericMessagePublisher.publishString(channelName, entryMessage);
+        redisSubscriber.subscribeToChannel(channelName, EnterRoomResponseDTO.class, "/rooms/" + roomId);
+        // 입장 메시지를 Redis 채널에 발행
+        genericMessagePublisher.publishString(channelName, enterRoomResponseDTO);
     }
 
     public void leaveRoom(String roomId, String userId) {
