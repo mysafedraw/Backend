@@ -51,7 +51,7 @@ public class RoomController {
 
     @MessageMapping("/join")
     public void joinRoom(RoomJoinRequestDTO roomJoinRequestDTO) {
-        roomService.joinRoom(roomJoinRequestDTO.roomId(), roomJoinRequestDTO.userId());
+       roomService.joinRoom(roomJoinRequestDTO.roomId(), roomJoinRequestDTO.userId());
     }
 
     @MessageMapping("/leave")

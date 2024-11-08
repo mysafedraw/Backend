@@ -36,6 +36,7 @@ public class GameService {
     private final DialogueService dialogueService;
     private final ScenarioService scenarioService;
     private final RoomService roomService;
+    private final UserService userService;
 
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
         String channelName = redisKeyPrefix + startGameRequestDTO.roomId() + ":start";
@@ -147,9 +148,20 @@ public class GameService {
         genericMessagePublisher.publishString(channelName, confirmResponseDTO);
     }
 
-    public void endVote(String roomId) {
+    public void endVote(String roomId, String userId) {
         String channelName = "games:" + roomId + ":voteEnded";
-        EndVoteResponseDTO endVoteResponseDTO = new EndVoteResponseDTO(GameAction.END_VOTE);
+        String userKey = userService.generateUserKey(userId);
+        String drawingSrc = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, drawSrcField));
+        Set<String> userIds = stringRedisTemplate.opsForZSet().range(userKey, 0, -1);
+        List<String> voteResults = userIds.stream().map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(userKey, isAgreedField))).toList();
+        VoteResponseDTO voteResponseDTO = calculateVoteResult(voteResults);
+        boolean isPassed = isPassed(voteResponseDTO);
+        EndVoteResponseDTO endVoteResponseDTO = EndVoteResponseDTO.builder()
+                .userId(userId)
+                .drawingSrc(drawingSrc)
+                .isPassed(isPassed)
+                .action(GameAction.END_VOTE)
+                .build();
 
         genericMessagePublisher.publishString(channelName, endVoteResponseDTO);
     }
@@ -198,5 +210,9 @@ public class GameService {
             }
         }
         return new VoteResponseDTO(proCount, conCount, GameAction.VOTE);
+    }
+
+    private boolean isPassed(VoteResponseDTO voteResponseDTO) {
+        return voteResponseDTO.proCount() >= voteResponseDTO.conCount();
     }
 }

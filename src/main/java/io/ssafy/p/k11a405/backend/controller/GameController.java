@@ -57,6 +57,6 @@ public class GameController {
 
     @MessageMapping("/vote/end")
     public void endVote(EndVoteRequestDTO endVoteRequestDTO) {
-        gameService.endVote(endVoteRequestDTO.roomId());
+        gameService.endVote(endVoteRequestDTO.roomId(), endVoteRequestDTO.userId());
     }
 }
