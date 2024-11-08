@@ -61,10 +61,13 @@ public class RoomService {
 //        // Redis에 유저 입장 시간 기록
         addUser(roomId, userId);
 
-        List<String> userIds = getAllUsersInRoom(roomId);
-        List<UserResponseDTO> users = userIds.stream().map(userService::getUserInfoByUserId).toList();
-
         String hostId = getHostId(roomId);
+
+        List<String> userIds = getAllUsersInRoom(roomId);
+        List<UserResponseDTO> users = userIds.stream()
+                .filter(id -> !hostId.equals(id))
+                .map(userService::getUserInfoByUserId).toList();
+
         UserResponseDTO host = userService.getUserInfoByUserId(hostId);
 
         EnterRoomResponseDTO enterRoomResponseDTO = new EnterRoomResponseDTO(host, users, RoomAction.ENTER_ROOM);
