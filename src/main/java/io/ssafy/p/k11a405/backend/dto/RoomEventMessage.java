@@ -16,5 +16,5 @@ import lombok.NoArgsConstructor;
 public class RoomEventMessage{
     private String userId;
     private String roomId;
-    private String action;
+    private RoomAction action;
 }

@@ -1,6 +1,7 @@
 package io.ssafy.p.k11a405.backend.service;
 
 import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
+import io.ssafy.p.k11a405.backend.dto.RoomAction;
 import io.ssafy.p.k11a405.backend.dto.RoomEventMessage;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.SendChatResponseDTO;
@@ -56,7 +57,7 @@ public class RoomService {
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
 //        stringRedisTemplate.opsForHash().put(roomKey, "ownerSessionId", ownerSessionId);
 
-        return new RoomResponseDTO(roomId, ownerId);
+        return new RoomResponseDTO(roomId, ownerId, RoomAction.CREATE_ROOM);
     }
 
     public void joinRoom(String roomId, String userId) {
@@ -64,7 +65,7 @@ public class RoomService {
         addUser(roomId, userId);
 
         // 입장 메시지를 Redis 채널에 발행
-        RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "enter");
+        RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, RoomAction.ENTER_ROOM);
         String channelName = "rooms:" + roomId;
         genericMessagePublisher.publishString(channelName, entryMessage);
     }
@@ -72,7 +73,7 @@ public class RoomService {
     public void leaveRoom(String roomId, String userId) {
 
         // 퇴장 메시지를 Redis 채널에 발행
-        RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, "leave");
+        RoomEventMessage entryMessage = new RoomEventMessage(userId, roomId, RoomAction.LEAVE_ROOM);
         leaveUser(roomId, userId);
         String channelName = "rooms:" + roomId;
         genericMessagePublisher.publishString(channelName, entryMessage);
