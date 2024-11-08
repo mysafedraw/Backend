@@ -162,6 +162,7 @@ public class GameService {
                 .isPassed(isPassed)
                 .action(GameAction.END_VOTE)
                 .build();
+        removeFromQueue(roomId, userId);
 
         genericMessagePublisher.publishString(channelName, endVoteResponseDTO);
     }
@@ -214,5 +215,14 @@ public class GameService {
 
     private boolean isPassed(VoteResponseDTO voteResponseDTO) {
         return voteResponseDTO.proCount() >= voteResponseDTO.conCount();
+    }
+
+    private void removeFromQueue(String roomId, String targetUserId) {
+        String queueKey = redisKeyPrefix + roomId + ":explanationQueue";
+        List<String> explanationQueue = stringRedisTemplate.opsForList().range(queueKey, 0, -1);
+        stringRedisTemplate.delete(queueKey);
+        explanationQueue.stream().filter(userId -> !userId.equals(targetUserId)).forEach(userId -> {
+            stringRedisTemplate.opsForList().rightPush(queueKey, userId);
+        });
     }
 }
