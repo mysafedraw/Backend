@@ -27,6 +27,7 @@ public class GameService {
     private final String nicknameField = "nickname";
     private final String avatarProfileImgField = "avatarProfileImg";
     private final String drawSrcField = "drawingSrc";
+    private final String isAgreedField = "isAgreed";
 
     private final GenericMessagePublisher genericMessagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
@@ -122,7 +123,14 @@ public class GameService {
         // 방장 아이디 가져오기
         String hostId = roomService.getHostId(roomId);
         String channelName = "rooms:" + hostId + ":users";
-        genericMessagePublisher.publishString(channelName, new VoteResponseDTO(userId, isAgreed, GameAction.VOTE));
+        // 1. 투표 정보 저장
+        String userKey = "rooms:" + roomId + ":users";
+        stringRedisTemplate.opsForHash().put(userKey, isAgreedField, String.valueOf(isAgreed));
+        // 2. 투표 현황 응답
+        Set<String> userIds = stringRedisTemplate.opsForZSet().range(userKey, 0, -1);
+        List<String> voteResults = userIds.stream().map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(userKey, isAgreedField))).toList();
+
+        genericMessagePublisher.publishString(channelName, calculateVoteResult(voteResults));
     }
 
     public void confirmAnswer(String userId, boolean isConfirmed, String roomId) {
@@ -169,5 +177,19 @@ public class GameService {
         keys.add(enqueuedKey);
         keys.add(queueKey);
         stringRedisTemplate.delete(keys);
+    }
+
+    private VoteResponseDTO calculateVoteResult(List<String> voteResults) {
+        int proCount = 0;
+        int conCount = 0;
+        for (String voteResult : voteResults) {
+            boolean result = Boolean.parseBoolean(voteResult);
+            if (result) {
+                ++proCount;
+            } else {
+                ++conCount;
+            }
+        }
+        return new VoteResponseDTO(proCount, conCount, GameAction.VOTE);
     }
 }
