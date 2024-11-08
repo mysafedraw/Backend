@@ -98,7 +98,7 @@ public class RoomService {
         long entryTime = System.currentTimeMillis() / 1000;
         stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
 
-        redisSubscriber.subscribeToChannel(userKey, VoteResponseDTO.class, "/users/" + userId);
+        redisSubscriber.subscribeToChannel(userKey, VoteResponseDTO.class, "/games/" + userId);
     }
 
     public void leaveUser(String roomId, String userId) {
