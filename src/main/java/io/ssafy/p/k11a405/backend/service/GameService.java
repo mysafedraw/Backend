@@ -42,6 +42,7 @@ public class GameService {
         String situationTag = ScenarioType.SITUATION.getKoreanName();
         Dialogue dialogue = dialogueService.findScenarioByStageAndSituation(stageNumber, situationTag);
         DialogueSituation dialogueSituation = dialogue.getDialogues().get(0);
+        clearRoomStatus(startGameRequestDTO.roomId());
 
         StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(dialogueSituation.getSituationDialogue(), GameAction.GAME_START);
         genericMessagePublisher.publishString(channelName, startGameResponseDTO);
@@ -157,5 +158,15 @@ public class GameService {
         String key = "user:" + userId;
         AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, isCorrectField)));
         return AnswerStatus.CORRECT_ANSWER.equals(isCorrect);
+    }
+
+    private void clearRoomStatus(String roomId) {
+        String enqueuedKey = redisKeyPrefix + roomId + ":enqueued";
+        String queueKey = redisKeyPrefix + roomId + ":explanationQueue";
+
+        ArrayList<String> keys = new ArrayList<>();
+        keys.add(enqueuedKey);
+        keys.add(queueKey);
+        stringRedisTemplate.delete(keys);
     }
 }
