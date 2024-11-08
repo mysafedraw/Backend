@@ -40,7 +40,7 @@ public class UserService {
         return getUserInfoByUserId(userId);
     }
 
-    private UserResponseDTO getUserInfoByUserId(String userId) {
+    public UserResponseDTO getUserInfoByUserId(String userId) {
         String userKey = generateUserKey(userId);
         String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, nicknameField));
         String profileImg = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, avatarProfileImgField));
