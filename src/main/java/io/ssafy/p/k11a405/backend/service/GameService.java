@@ -127,13 +127,8 @@ public class GameService {
         String userKey = "user:" + userId;
         stringRedisTemplate.opsForHash().put(userKey, isAgreedField, String.valueOf(isAgreed));
         // 2. 투표 현황 응답
-        String roomKey = "rooms:" + roomId + ":users";
-        Set<String> userIds = stringRedisTemplate.opsForZSet().range(roomKey, 0, -1);
-        List<String> voteResults = userIds.stream()
-                .map(id -> "user:" + id)
-                .map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(id, isAgreedField)))
-                .filter(id -> !"null".equals(id))
-                .toList();
+        Set<String> userIds = userService.getUserIdsInRoom(roomId);
+        List<String> voteResults = extractVoteResults(userIds);
         String hostKey = "user:" + hostId;
         genericMessagePublisher.publishString(hostKey, calculateVoteResult(voteResults));
     }
@@ -156,8 +151,8 @@ public class GameService {
         String channelName = "games:" + roomId + ":voteEnded";
         String userKey = userService.generateUserKey(userId);
         String drawingSrc = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, drawSrcField));
-        Set<String> userIds = stringRedisTemplate.opsForZSet().range(userKey, 0, -1);
-        List<String> voteResults = userIds.stream().map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(userKey, isAgreedField))).toList();
+        Set<String> userIds = userService.getUserIdsInRoom(roomId);
+        List<String> voteResults = extractVoteResults(userIds);
         VoteResponseDTO voteResponseDTO = calculateVoteResult(voteResults);
         boolean isPassed = isPassed(voteResponseDTO);
         EndVoteResponseDTO endVoteResponseDTO = EndVoteResponseDTO.builder()
@@ -235,5 +230,13 @@ public class GameService {
         explanationQueue.stream().filter(userId -> !userId.equals(targetUserId)).forEach(userId -> {
             stringRedisTemplate.opsForList().rightPush(queueKey, userId);
         });
+    }
+
+    private List<String> extractVoteResults(Set<String> userIds) {
+        return userIds.stream()
+                .map(id -> "user:" + id)
+                .map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(id, isAgreedField)))
+                .filter(id -> !"null".equals(id))
+                .toList();
     }
 }
