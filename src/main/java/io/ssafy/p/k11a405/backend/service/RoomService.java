@@ -101,10 +101,11 @@ public class RoomService {
     public void addUser(String roomId, String userId) {
         // Redis에 유저 입장 시간 기록
         String userKey = "rooms:" + roomId + ":users";
+        String personalKey = "user:" + userId;
         long entryTime = System.currentTimeMillis() / 1000;
         stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
 
-        redisSubscriber.subscribeToChannel(userKey, VoteResponseDTO.class, "/games/" + userId);
+        redisSubscriber.subscribeToChannel(personalKey, VoteResponseDTO.class, "/games/" + userId);
     }
 
     public void leaveUser(String roomId, String userId) {

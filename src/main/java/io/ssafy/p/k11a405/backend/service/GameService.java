@@ -123,15 +123,19 @@ public class GameService {
     public void vote(String roomId, boolean isAgreed, String userId) {
         // 방장 아이디 가져오기
         String hostId = roomService.getHostId(roomId);
-        String channelName = "rooms:" + hostId + ":users";
         // 1. 투표 정보 저장
-        String userKey = "rooms:" + roomId + ":users";
+        String userKey = "user:" + userId;
         stringRedisTemplate.opsForHash().put(userKey, isAgreedField, String.valueOf(isAgreed));
         // 2. 투표 현황 응답
-        Set<String> userIds = stringRedisTemplate.opsForZSet().range(userKey, 0, -1);
-        List<String> voteResults = userIds.stream().map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(userKey, isAgreedField))).toList();
-
-        genericMessagePublisher.publishString(channelName, calculateVoteResult(voteResults));
+        String roomKey = "rooms:" + roomId + ":users";
+        Set<String> userIds = stringRedisTemplate.opsForZSet().range(roomKey, 0, -1);
+        List<String> voteResults = userIds.stream()
+                .map(id -> "user:" + id)
+                .map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(id, isAgreedField)))
+                .filter(id -> !"null".equals(id))
+                .toList();
+        String hostKey = "user:" + hostId;
+        genericMessagePublisher.publishString(hostKey, calculateVoteResult(voteResults));
     }
 
     public void confirmAnswer(String userId, boolean isConfirmed, String roomId) {
