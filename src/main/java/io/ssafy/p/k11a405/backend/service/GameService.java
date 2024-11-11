@@ -47,7 +47,9 @@ public class GameService {
         DialogueSituation dialogueSituation = dialogue.getDialogues().get(0);
         clearRoomStatus(roomId);
         String roomKey = roomKeyPrefix + roomId;
-        stringRedisTemplate.opsForHash().put(roomKey, timeLimitField, String.valueOf(timeLimit));
+        if (stageNumber == 1) {
+            stringRedisTemplate.opsForHash().put(roomKey, timeLimitField, String.valueOf(timeLimit));
+        }
 
         StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(dialogueSituation.getSituationDialogue(), GameAction.GAME_START);
         genericMessagePublisher.publishString(channelName, startGameResponseDTO);
