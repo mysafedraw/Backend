@@ -170,7 +170,12 @@ public class GameService {
 
     public void startDrawing(String roomId) {
         String channelName = "games:" + roomId + ":startDrawing";
-        StartDrawingResponseDTO startDrawingResponseDTO = new StartDrawingResponseDTO(GameAction.DRAWING_START);
+        String roomKey = roomKeyPrefix + roomId;
+        int timeLimit = Integer.parseInt(
+                String.valueOf(stringRedisTemplate.opsForHash().get(roomKey, timeLimitField)));
+        Long endTime = System.currentTimeMillis() + (1000L * timeLimit);
+
+        StartDrawingResponseDTO startDrawingResponseDTO = new StartDrawingResponseDTO(endTime, GameAction.DRAWING_START);
 
         genericMessagePublisher.publishString(channelName, startDrawingResponseDTO);
     }
