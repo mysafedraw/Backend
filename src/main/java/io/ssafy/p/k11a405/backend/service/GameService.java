@@ -22,12 +22,13 @@ import java.util.Set;
 public class GameService {
 
     private final String redisKeyPrefix = "games:";
-    private final String idField = "id";
+    private final String roomKeyPrefix = "rooms:";
     private final String isCorrectField = "isCorrect";
     private final String nicknameField = "nickname";
     private final String avatarProfileImgField = "avatarProfileImg";
     private final String drawSrcField = "drawingSrc";
     private final String isAgreedField = "isAgreed";
+    private final String timeLimitField = "timeLimit";
 
     private final GenericMessagePublisher genericMessagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
@@ -46,6 +47,9 @@ public class GameService {
         Dialogue dialogue = dialogueService.findScenarioByStageAndSituation(stageNumber, situationTag);
         DialogueSituation dialogueSituation = dialogue.getDialogues().get(0);
         clearRoomStatus(startGameRequestDTO.roomId());
+        String roomKey = roomKeyPrefix + startGameRequestDTO.roomId();
+        Integer timeLimit = startGameRequestDTO.timeLimit();
+        stringRedisTemplate.opsForHash().put(roomKey, timeLimitField, String.valueOf(timeLimit));
 
         StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(dialogueSituation.getSituationDialogue(), GameAction.GAME_START);
         genericMessagePublisher.publishString(channelName, startGameResponseDTO);
