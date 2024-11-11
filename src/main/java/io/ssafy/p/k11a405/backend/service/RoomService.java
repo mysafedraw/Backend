@@ -48,7 +48,7 @@ public class RoomService {
         stringRedisTemplate.opsForHash().put(roomKey, "roomId", roomId);
         stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
-        subscribeChannelsOnRoom(roomId);
+        subscribeChannelsOnRoom(roomId, ownerId);
 
         // 방 정보에 방장 세션 ID 포함
 //        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
@@ -118,7 +118,7 @@ public class RoomService {
         return String.valueOf(stringRedisTemplate.opsForHash().get(key, "hostId"));
     }
 
-    private void subscribeChannelsOnRoom(String roomId) {
+    private void subscribeChannelsOnRoom(String roomId, String hostId) {
         String channelName = "rooms:" + roomId;
         String chatChannel = "chat:" + roomId;
         String gameStartChannel = "games:" + roomId + ":start";
@@ -132,7 +132,7 @@ public class RoomService {
         redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
         redisSubscriber.subscribeToChannel(gameExplainQueue, ExplainResponseDTO.class, "/games/" + roomId);
         redisSubscriber.subscribeToChannel(gameAllAnswersChannel, CheckAllAnswersResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(voteEndChannel, EndVoteResponseDTO.class, "/games/" + roomId);
+        redisSubscriber.subscribeToChannel(voteEndChannel, EndVoteResponseDTO.class, "/games/" + hostId);
         redisSubscriber.subscribeToChannel(startDrawingChannel, StartDrawingResponseDTO.class, "/games/" + roomId);
     }
 }
