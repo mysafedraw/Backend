@@ -142,8 +142,8 @@ public class GameService {
 
         }
         // 방장 id 가져오기
-        String hostId = "hostId";
-        String channelName = "rooms:" + hostId + ":users";
+        String hostId = roomService.getHostId(roomId);
+        String channelName = "user:" + hostId;
         genericMessagePublisher.publishString(channelName, confirmResponseDTO);
     }
 
