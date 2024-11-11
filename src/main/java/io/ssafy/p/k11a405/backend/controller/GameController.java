@@ -16,7 +16,10 @@ public class GameController {
 
     @MessageMapping("/start")
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
-        gameService.startGame(startGameRequestDTO);
+        String roomId = startGameRequestDTO.roomId();
+        Integer stageNumber = startGameRequestDTO.stageNumber();
+        Integer timeLimit = startGameRequestDTO.timeLimit();
+        gameService.startGame(roomId, stageNumber, timeLimit);
     }
 
     @MessageMapping("/explanation-queue")

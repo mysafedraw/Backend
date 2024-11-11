@@ -39,16 +39,14 @@ public class GameService {
     private final RoomService roomService;
     private final UserService userService;
 
-    public void startGame(StartGameRequestDTO startGameRequestDTO) {
-        String channelName = redisKeyPrefix + startGameRequestDTO.roomId() + ":start";
+    public void startGame(String roomId, Integer stageNumber, Integer timeLimit) {
+        String channelName = redisKeyPrefix + roomId + ":start";
         // db에서 scenarioDialog 가져오기
-        Integer stageNumber = startGameRequestDTO.stageNumber();
         String situationTag = ScenarioType.SITUATION.getKoreanName();
         Dialogue dialogue = dialogueService.findScenarioByStageAndSituation(stageNumber, situationTag);
         DialogueSituation dialogueSituation = dialogue.getDialogues().get(0);
-        clearRoomStatus(startGameRequestDTO.roomId());
-        String roomKey = roomKeyPrefix + startGameRequestDTO.roomId();
-        Integer timeLimit = startGameRequestDTO.timeLimit();
+        clearRoomStatus(roomId);
+        String roomKey = roomKeyPrefix + roomId;
         stringRedisTemplate.opsForHash().put(roomKey, timeLimitField, String.valueOf(timeLimit));
 
         StartGameResponseDTO startGameResponseDTO = new StartGameResponseDTO(dialogueSituation.getSituationDialogue(), GameAction.GAME_START);
