@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -93,9 +94,11 @@ public class GameService {
         // 각 유저의 정답을 담아야 한다. 1. 유저 아이디 리스트 조회 2. 유저 아이디에 맞는 이미지 생성
         String userKey = "rooms:" + roomId + ":users";
         Set<String> userIds = stringRedisTemplate.opsForZSet().range(userKey, 0, -1);
-        List<AnswerStatusResponseDTO> answerStatuses = new ArrayList<>();
-        userIds.stream().map(this::getUserAnswerStatus).forEach(answerStatuses::add);
-//        List<AnswerStatusResponseDTO> answerStatuses = userIds.stream().map(this::getUserAnswerStatus).toList();
+        String hostId = roomService.getHostId(roomId);
+//        List<AnswerStatusResponseDTO> answerStatuses = new ArrayList<>();
+//        userIds.stream().map(this::getUserAnswerStatus).forEach(answerStatuses::add);
+        List<AnswerStatusResponseDTO> answerStatuses = userIds.stream()
+                .filter(Predicate.not(hostId::equals)).map(this::getUserAnswerStatus).toList();
 
         CheckAllAnswersResponseDTO checkAllAnswersResponseDTO = new CheckAllAnswersResponseDTO(answerStatuses, GameAction.CHECK_ALL_ANSWERS);
         String channelName = redisKeyPrefix + roomId + ":allAnswers";
