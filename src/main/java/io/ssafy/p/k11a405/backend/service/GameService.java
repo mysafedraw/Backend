@@ -117,7 +117,7 @@ public class GameService {
 
         // 유저 정답 여부 redis 저장
         String userKey = "user:" + userId;
-        stringRedisTemplate.opsForHash().put(userKey, isCorrectField, answerStatus);
+        stringRedisTemplate.opsForHash().put(userKey, isCorrectField, String.valueOf(answerStatus));
 
         InGameResponseDTO inGameResponseDTO = InGameResponseDTO.builder()
                 .userId(userId)
