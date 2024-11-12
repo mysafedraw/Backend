@@ -15,8 +15,8 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // 모든 엔드포인트에 CORS 적용
                         .allowedOriginPatterns("*") // 프론트엔드 서버 도메인
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowCredentials(true); // 자격 증명 지원 활성화
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+//                        .allowCredentials(true); // 자격 증명 지원 활성화
             }
         };
     }
