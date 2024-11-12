@@ -2,6 +2,7 @@ package io.ssafy.p.k11a405.backend.controller;
 
 import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.service.GameService;
+import io.ssafy.p.k11a405.backend.service.VoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Controller;
 public class GameController {
 
     private final GameService gameService;
+    private final VoteService voteService;
 
     @MessageMapping("/start")
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
@@ -50,7 +52,7 @@ public class GameController {
 
     @MessageMapping("/vote")
     public void vote(VoteRequestDTO voteRequestDTO) {
-        gameService.vote(voteRequestDTO.roomId(), voteRequestDTO.isAgreed(), voteRequestDTO.userId());
+        voteService.vote(voteRequestDTO.roomId(), voteRequestDTO.isAgreed(), voteRequestDTO.userId());
     }
 
     @MessageMapping("/confirm")
@@ -59,7 +61,8 @@ public class GameController {
     }
 
     @MessageMapping("/vote/end")
-    public void endVote(EndVoteRequestDTO endVoteRequestDTO) {gameService.endVote(endVoteRequestDTO.roomId(), endVoteRequestDTO.userId());
+    public void endVote(EndVoteRequestDTO endVoteRequestDTO) {
+        voteService.endVote(endVoteRequestDTO.roomId(), endVoteRequestDTO.userId());
     }
 
     @MessageMapping("/drawing/start")
