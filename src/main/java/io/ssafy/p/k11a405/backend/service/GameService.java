@@ -50,8 +50,8 @@ public class GameService {
             return;
         }
         String channelName = redisKeyPrefix + explainRequestDTO.roomId() + ":explainQueue";
-        String enqueuedKey = redisKeyPrefix + explainRequestDTO.roomId() + ":enqueued";
-        String queueKey = redisKeyPrefix + explainRequestDTO.roomId() + ":explanationQueue";
+        String enqueuedKey = redisKeyPrefix + explainRequestDTO.userId() + ":enqueued";
+        String queueKey = redisKeyPrefix + explainRequestDTO.userId() + ":explanationQueue";
 
         // 추가된적 있는지 확인
         // key가 있는지
