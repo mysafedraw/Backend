@@ -178,7 +178,7 @@ public class GameService {
                 String.valueOf(stringRedisTemplate.opsForHash().get(roomKey, timeLimitField)));
         Long endTime = System.currentTimeMillis() + (1000L * timeLimit);
 
-        StartDrawingResponseDTO startDrawingResponseDTO = new StartDrawingResponseDTO(endTime, GameAction.DRAWING_START);
+        StartDrawingResponseDTO startDrawingResponseDTO = new StartDrawingResponseDTO(endTime, timeLimit, GameAction.DRAWING_START);
 
         genericMessagePublisher.publishString(channelName, startDrawingResponseDTO);
     }
