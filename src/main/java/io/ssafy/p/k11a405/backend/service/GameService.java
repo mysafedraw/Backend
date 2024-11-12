@@ -29,6 +29,7 @@ public class GameService {
     private final String drawSrcField = "drawingSrc";
     private final String isAgreedField = "isAgreed";
     private final String timeLimitField = "timeLimit";
+    private final int answerScore = 100;
 
     private final GenericMessagePublisher genericMessagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
@@ -107,6 +108,9 @@ public class GameService {
         try {
             Boolean isCorrect = scenarioService.findAssetValidations(stageNumber, userAnswer, scenarioId);
             answerStatus = AnswerStatus.getAnswerStatus(isCorrect);
+            if (isCorrect) {
+                addScore(userId);
+            }
         } catch (BusinessException e) {
             answerStatus = AnswerStatus.INCORRECT_ANSWER;
         }
@@ -140,10 +144,7 @@ public class GameService {
     public void confirmAnswer(String userId, boolean isConfirmed, String roomId) {
         ConfirmResponseDTO confirmResponseDTO = new ConfirmResponseDTO(GameAction.ANSWER_CONFIRMED);
         if (isConfirmed) {
-            // 유저 점수 가져오기
-
-            // 유저 점수 업데이트
-
+            addScore(userId);
         }
         // 방장 id 가져오기
         String hostId = roomService.getHostId(roomId);
@@ -247,5 +248,11 @@ public class GameService {
                 .map(id -> String.valueOf(stringRedisTemplate.opsForHash().get(id, isAgreedField)))
                 .filter(id -> !"null".equals(id))
                 .toList();
+    }
+
+    private void addScore(String userId) {
+        String userKey = "user:" + userId;
+        int currentScore = Integer.parseInt(String.valueOf(stringRedisTemplate.opsForHash().get(userKey, "score")));
+        stringRedisTemplate.opsForHash().put(userKey, "score", String.valueOf(currentScore + answerScore));
     }
 }

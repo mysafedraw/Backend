@@ -104,6 +104,7 @@ public class RoomService {
         String personalKey = "user:" + userId;
         long entryTime = System.currentTimeMillis() / 1000;
         stringRedisTemplate.opsForZSet().add(userKey, userId, entryTime);
+        stringRedisTemplate.opsForHash().put(personalKey, "score", "0");
 
         redisSubscriber.subscribeToChannel(personalKey, VoteResponseDTO.class, "/games/" + userId);
     }
