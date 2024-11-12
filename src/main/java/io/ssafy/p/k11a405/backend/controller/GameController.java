@@ -1,6 +1,7 @@
 package io.ssafy.p.k11a405.backend.controller;
 
 import io.ssafy.p.k11a405.backend.dto.game.*;
+import io.ssafy.p.k11a405.backend.service.AnswerService;
 import io.ssafy.p.k11a405.backend.service.GameService;
 import io.ssafy.p.k11a405.backend.service.VoteService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ public class GameController {
 
     private final GameService gameService;
     private final VoteService voteService;
+    private final AnswerService answerService;
 
     @MessageMapping("/start")
     public void startGame(StartGameRequestDTO startGameRequestDTO) {
@@ -36,7 +38,7 @@ public class GameController {
 
     @MessageMapping("/answers")
     public void checkAllAnswers(CheckAllAnswersRequestDTO checkAllAnswersRequestDTO) {
-        gameService.checkAllAnswers(checkAllAnswersRequestDTO.roomId());
+        answerService.checkAllAnswers(checkAllAnswersRequestDTO.roomId());
     }
 
     @MessageMapping("/answer")
@@ -46,7 +48,7 @@ public class GameController {
         Integer scenarioId = checkAnswerRequestDTO.scenarioId();
         String userAnswer = checkAnswerRequestDTO.answer();
         Integer stageNumber = checkAnswerRequestDTO.stageNumber();
-        gameService.checkAnswer(roomId, userId, scenarioId, userAnswer, stageNumber);
+        answerService.checkAnswer(roomId, userId, scenarioId, userAnswer, stageNumber);
 
     }
 
@@ -57,7 +59,7 @@ public class GameController {
 
     @MessageMapping("/confirm")
     public void confirmAnswer(ConfirmRequestDTO confirmRequestDTO) {
-        gameService.confirmAnswer(confirmRequestDTO.userId(), confirmRequestDTO.isConfirmed(), confirmRequestDTO.roomId());
+        answerService.confirmAnswer(confirmRequestDTO.userId(), confirmRequestDTO.isConfirmed(), confirmRequestDTO.roomId());
     }
 
     @MessageMapping("/vote/end")
