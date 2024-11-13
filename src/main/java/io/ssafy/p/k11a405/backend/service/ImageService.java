@@ -37,7 +37,7 @@ public class ImageService {
     public void uploadAnswerDrawing(MultipartFile file, String userId) throws IOException {
         String userKey = "user:" + userId;
         // 실제로는 이미지를 저장하고, 그 경로를 가져와야 한다.
-        String drawingSrc = uploadImage(file, userId);
+        String drawingSrc = uploadImage(file, "drawing/" + userId);
 
         stringRedisTemplate.opsForHash().put(userKey, drawSrcField, drawingSrc);
     }
