@@ -95,6 +95,12 @@ public class AnswerService {
         genericMessagePublisher.publishString(channelName, confirmResponseDTO);
     }
 
+    public void findMyAnswerStatus(String userId) {
+        AnswerStatusResponseDTO userAnswerStatus = getUserAnswerStatus(userId);
+        FindMyAnswerStatusResponseDTO findMyAnswerStatusResponseDTO = new FindMyAnswerStatusResponseDTO(userAnswerStatus, GameAction.MY_DRAWING);
+        simpMessagingTemplate.convertAndSend("/games/" + userId, findMyAnswerStatusResponseDTO);
+    }
+
     private void addScore(String userId) {
         String userKey = "user:" + userId;
         int currentScore = Integer.parseInt(String.valueOf(stringRedisTemplate.opsForHash().get(userKey, "score")));

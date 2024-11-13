@@ -1,5 +1,6 @@
 package io.ssafy.p.k11a405.backend.controller;
 
+import io.ssafy.p.k11a405.backend.dto.game.FindMyAnswerStatusRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.service.AnswerService;
 import io.ssafy.p.k11a405.backend.service.GameService;
@@ -70,5 +71,10 @@ public class GameController {
     @MessageMapping("/drawing/start")
     public void startDrawing(StartDrawingRequestDTO startDrawingRequestDTO) {
         gameService.startDrawing(startDrawingRequestDTO.roomId());
+    }
+
+    @MessageMapping("/my-drawing")
+    public void findMyAnswerStatus(FindMyAnswerStatusRequestDTO findMyDrawingStatusRequestDTO) {
+        answerService.findMyAnswerStatus(findMyDrawingStatusRequestDTO.userId());
     }
 }
