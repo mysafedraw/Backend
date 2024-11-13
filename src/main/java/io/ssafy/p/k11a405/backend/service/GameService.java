@@ -69,10 +69,9 @@ public class GameService {
         genericMessagePublisher.publishString(channelName, explainResponseDTO);
     }
 
-    public void haveASay(HaveASayRequestDTO haveASayRequestDTO) {
-        String channelName = redisKeyPrefix + haveASayRequestDTO.roomId();
-        String queueKey = redisKeyPrefix + haveASayRequestDTO.roomId() + ":explanationQueue";
-        String userId = stringRedisTemplate.opsForList().leftPop(queueKey);
+    public void haveASay(String roomId, String userId) {
+        String channelName = redisKeyPrefix + roomId;
+        String queueKey = redisKeyPrefix + roomId + ":explanationQueue";
         List<String> userIds = stringRedisTemplate.opsForList().range(queueKey, 0, -1);
         HaveASayResponseDTO haveASayResponseDTO = new HaveASayResponseDTO(userId, userIds, GameAction.HAVE_A_SAY);
         genericMessagePublisher.publishString(channelName, haveASayResponseDTO);

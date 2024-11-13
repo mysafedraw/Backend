@@ -33,7 +33,7 @@ public class GameController {
 
     @MessageMapping("/say")
     public void haveASay(HaveASayRequestDTO haveASayRequestDTO) {
-        gameService.haveASay(haveASayRequestDTO);
+        gameService.haveASay(haveASayRequestDTO.roomId(), haveASayRequestDTO.userId());
     }
 
     @MessageMapping("/answers")
