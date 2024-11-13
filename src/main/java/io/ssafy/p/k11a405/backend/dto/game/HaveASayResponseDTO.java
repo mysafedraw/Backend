@@ -4,6 +4,6 @@ import java.util.List;
 
 public record HaveASayResponseDTO(
         String userId,
-        List<String> waitingQueue,
+        List<AnswerStatusResponseDTO> waitingQueue,
         GameAction action
 ) {}
