@@ -133,6 +133,7 @@ public class RoomService {
         String voteEndChannel = gameKeyPrefix+ roomId + ":voteEnded";
         String startDrawingChannel = gameKeyPrefix + roomId + ":startDrawing";
         String haveASayChannel = gameKeyPrefix + roomId + ":haveASay";
+        String revokeASayChannel = gameKeyPrefix + roomId + ":revokeASay";
         redisSubscriber.subscribeToChannel(channelName, EnterRoomResponseDTO.class, "/rooms/" + roomId);
 //        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
         redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
@@ -142,5 +143,6 @@ public class RoomService {
         redisSubscriber.subscribeToChannel(voteEndChannel, EndVoteResponseDTO.class, "/games/" + hostId);
         redisSubscriber.subscribeToChannel(startDrawingChannel, StartDrawingResponseDTO.class, "/games/" + roomId);
         redisSubscriber.subscribeToChannel(haveASayChannel, HaveASayResponseDTO.class, "/games/" + roomId);
+        redisSubscriber.subscribeToChannel(revokeASayChannel, RevokeASayResponseDTO.class, "/games/" + roomId);
     }
 }

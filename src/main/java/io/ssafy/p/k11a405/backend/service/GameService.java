@@ -88,6 +88,12 @@ public class GameService {
         genericMessagePublisher.publishString(channelName, haveASayResponseDTO);
     }
 
+    public void revokeASay(String roomId, String userId) {
+        String channelName = redisKeyPrefix + roomId + ":revokeASay";
+        RevokeASayResponseDTO revokeASayResponseDTO = new RevokeASayResponseDTO(GameAction.REVOKE_A_SAY);
+        genericMessagePublisher.publishString(channelName, revokeASayResponseDTO);
+    }
+
     public void startDrawing(String roomId) {
         String channelName = "games:" + roomId + ":startDrawing";
         String roomKey = roomKeyPrefix + roomId;
