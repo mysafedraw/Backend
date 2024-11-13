@@ -1,6 +1,7 @@
 package io.ssafy.p.k11a405.backend.service;
 
 import io.ssafy.p.k11a405.backend.dto.ScenarioType;
+import io.ssafy.p.k11a405.backend.dto.UserResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.entity.Dialogue;
 import io.ssafy.p.k11a405.backend.entity.DialogueSituation;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +24,15 @@ public class GameService {
     private final String roomKeyPrefix = "rooms:";
     private final String isCorrectField = "isCorrect";
     private final String timeLimitField = "timeLimit";
+    private final String drawingSrcField = "drawingSrc";
 
     private final GenericMessagePublisher genericMessagePublisher;
     private final StringRedisTemplate stringRedisTemplate;
 
     private final DialogueService dialogueService;
     private final AnswerService answerService;
+    private final UserService userService;
+    private final RoomService roomService;
 
     public void startGame(String roomId, Integer stageNumber, Integer timeLimit) {
         String channelName = redisKeyPrefix + roomId + ":start";
@@ -70,11 +75,16 @@ public class GameService {
     }
 
     public void haveASay(String roomId, String userId) {
-        String channelName = redisKeyPrefix + roomId;
-        String queueKey = redisKeyPrefix + roomId + ":explanationQueue";
-        List<String> userIds = stringRedisTemplate.opsForList().range(queueKey, 0, -1);
-        List<AnswerStatusResponseDTO> answerStatuses = userIds.stream().map(answerService::getUserAnswerStatus).toList();
-        HaveASayResponseDTO haveASayResponseDTO = new HaveASayResponseDTO(userId, answerStatuses, GameAction.HAVE_A_SAY);
+        String channelName = redisKeyPrefix + roomId + ":haveASay";
+        UserResponseDTO userInfoByUserId = userService.getUserInfoByUserId(userId);
+        String drawingSrc = String.valueOf(stringRedisTemplate.opsForHash().get("user:" + userId, drawingSrcField));
+        HaveASayResponseDTO haveASayResponseDTO = HaveASayResponseDTO.builder()
+                .userId(userId)
+                .nickname(userInfoByUserId.nickname())
+                .avatarsImgSrc(userInfoByUserId.avatarsImg())
+                .drawingSrc(drawingSrc)
+                .action(GameAction.HAVE_A_SAY)
+                .build();
         genericMessagePublisher.publishString(channelName, haveASayResponseDTO);
     }
 

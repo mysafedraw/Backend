@@ -1,9 +1,12 @@
 package io.ssafy.p.k11a405.backend.dto.game;
 
-import java.util.List;
+import lombok.Builder;
 
+@Builder
 public record HaveASayResponseDTO(
         String userId,
-        List<AnswerStatusResponseDTO> waitingQueue,
+        String nickname,
+        String avatarsImgSrc,
+        String drawingSrc,
         GameAction action
 ) {}
