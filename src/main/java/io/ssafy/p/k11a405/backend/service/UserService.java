@@ -17,6 +17,7 @@ public class UserService {
     private final String avatarIdField = "avatarId";
     private final String nicknameField = "nickname";
     private final String avatarProfileImgField = "avatarProfileImg";
+    private final String scoreField = "score";
 
     private final StringRedisTemplate stringRedisTemplate;
     private final AvatarService avatarService;
@@ -33,7 +34,7 @@ public class UserService {
         stringRedisTemplate.opsForHash().put(userKey, avatarIdField, String.valueOf(avatarId)); // 아바타 id 저장
         stringRedisTemplate.opsForHash().put(userKey, avatarProfileImgField, avatarInfo.profileImg());
 
-        return new UserResponseDTO(userId, nickname, avatarInfo.profileImg()); // 생성된 유저 ID 반환
+        return new UserResponseDTO(userId, nickname, avatarInfo.profileImg(), 0); // 생성된 유저 ID 반환
     }
 
     public UserResponseDTO updateNickname(String nickname, String userId) {
@@ -46,7 +47,8 @@ public class UserService {
         String userKey = generateUserKey(userId);
         String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, nicknameField));
         String profileImg = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, avatarProfileImgField));
-        return new UserResponseDTO(userId, nickname, profileImg);
+        Integer score = Integer.parseInt(String.valueOf(stringRedisTemplate.opsForHash().get(userKey, scoreField)));
+        return new UserResponseDTO(userId, nickname, profileImg, score);
     }
 
     public String generateUserKey(String userId) {
