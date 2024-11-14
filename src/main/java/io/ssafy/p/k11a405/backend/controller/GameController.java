@@ -37,7 +37,7 @@ public class GameController {
         gameService.haveASay(haveASayRequestDTO.roomId(), haveASayRequestDTO.userId());
     }
 
-    @MessageMapping("/games/say-revoke")
+    @MessageMapping("/say-revoke")
     public void revokeASay(RevokeASayRequestDTO revokeASayRequestDTO) {
         gameService.revokeASay(revokeASayRequestDTO.roomId(), revokeASayRequestDTO.userId());
     }
