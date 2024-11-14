@@ -20,7 +20,7 @@ public class ImageController {
 
     private final ImageService imageService;
 
-    @PostMapping("/images/answer")
+    @PostMapping("/api/images/answer")
     public ResponseEntity<Void> submitAnswerDrawing(@RequestParam("file") MultipartFile file,
                                                     SubmitDrawingRequestDTO submitDrawingRequestDTO) throws IOException {
         imageService.uploadAnswerDrawing(file, submitDrawingRequestDTO.userId());
