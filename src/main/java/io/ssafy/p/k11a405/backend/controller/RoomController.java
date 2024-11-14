@@ -49,4 +49,9 @@ public class RoomController {
     public void leaveRoom(RoomJoinRequestDTO roomJoinRequestDTO) {
         roomService.leaveRoom(roomJoinRequestDTO.roomId(), roomJoinRequestDTO.userId());
     }
+
+    @MessageMapping("/destroy")
+    public void destroyRoom(String roomId) {
+        roomService.destroyRoom(roomId);
+    }
 }

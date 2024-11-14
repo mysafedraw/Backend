@@ -119,6 +119,12 @@ public class RoomService {
         return new CheckRoomExistenceResponseDTO(isExisting);
     }
 
+    public void destroyRoom(String roomId) {
+        unsubscribeChannels(adapterInfos.get(roomId));
+        adapterInfos.remove(roomId);
+        destroyKeys(roomId);
+    }
+
     private void subscribeChannelsOnRoom(String roomId, String hostId) {
         adapterInfos.put(roomId, new ArrayList<>());
         adapterInfos.get(roomId).add(new AdapterInfo(roomKeyPrefix + roomId, EnterRoomResponseDTO.class, "/rooms/" + roomId));
@@ -138,6 +144,18 @@ public class RoomService {
         for (AdapterInfo adapterInfo : adapterInfos) {
             redisSubscriber.subscribeToChannel(adapterInfo.messageListenerAdapter, adapterInfo.channel);
         }
+    }
+
+    private void unsubscribeChannels(List<AdapterInfo> adapterInfos) {
+        adapterInfos.stream()
+                .map(adapterInfo -> adapterInfo.messageListenerAdapter).forEach(redisSubscriber::unsubscribeFromChannel);
+    }
+
+    private void destroyKeys(String roomId) {
+        stringRedisTemplate.delete(roomKeyPrefix + roomId);
+        stringRedisTemplate.delete(roomKeyPrefix + roomId + ":users");
+        stringRedisTemplate.delete(gameKeyPrefix + roomId + ":enqueued");
+        stringRedisTemplate.delete(gameKeyPrefix + roomId + ":explanationQueue");
     }
 
     class AdapterInfo {
