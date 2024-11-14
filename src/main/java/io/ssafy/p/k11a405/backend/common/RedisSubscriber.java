@@ -28,4 +28,8 @@ public class RedisSubscriber {
     public void unsubscribeFromChannel(MessageListenerAdapter listenerAdapter) {
         listenerContainer.removeMessageListener(listenerAdapter);
     }
+
+    public void subscribeToChannel(MessageListenerAdapter messageListenerAdapter, String channel) {
+        listenerContainer.addMessageListener(messageListenerAdapter, new PatternTopic(channel));
+    }
 }

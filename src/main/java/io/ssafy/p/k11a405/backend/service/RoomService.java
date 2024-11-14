@@ -1,21 +1,21 @@
 package io.ssafy.p.k11a405.backend.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ssafy.p.k11a405.backend.common.RedisSubscriber;
 import io.ssafy.p.k11a405.backend.dto.*;
 import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
+import io.ssafy.p.k11a405.backend.pubsub.GenericMessageSubscribe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,11 +27,13 @@ public class RoomService {
     private final String roomKeyPrefix = "rooms:";
     private final String userKeyPrefix = "user:";
     private final String chatKeyPrefix = "chat:";
+    private final Map<String, List<AdapterInfo>> adapterInfos = new HashMap<>();
 
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisSubscriber redisSubscriber;  // RedisSubscriber 주입
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final GenericMessagePublisher genericMessagePublisher;
+    private final ObjectMapper objectMapper;
 
     private final UserService userService;
 
@@ -131,26 +133,36 @@ public class RoomService {
     }
 
     private void subscribeChannelsOnRoom(String roomId, String hostId) {
-        String channelName = roomKeyPrefix + roomId;
-        String chatChannel = chatKeyPrefix + roomId;
-        String gameStartChannel = gameKeyPrefix + roomId + ":start";
-        String gameExplainQueue = gameKeyPrefix + roomId + ":explainQueue";
-        String gameAllAnswersChannel = gameKeyPrefix + roomId + ":allAnswers";
-        String voteEndChannel = gameKeyPrefix+ roomId + ":voteEnded";
-        String startDrawingChannel = gameKeyPrefix + roomId + ":startDrawing";
-        String haveASayChannel = gameKeyPrefix + roomId + ":haveASay";
-        String revokeASayChannel = gameKeyPrefix + roomId + ":revokeASay";
-        String finalRankChannel = gameKeyPrefix + roomId + ":finalRanks";
-        redisSubscriber.subscribeToChannel(channelName, EnterRoomResponseDTO.class, "/rooms/" + roomId);
-//        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, "/rooms/" + roomId);
-        redisSubscriber.subscribeToChannel(chatChannel, SendChatResponseDTO.class, "/chat/" + roomId);
-        redisSubscriber.subscribeToChannel(gameStartChannel, StartGameResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(gameExplainQueue, ExplainResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(gameAllAnswersChannel, CheckAllAnswersResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(voteEndChannel, EndVoteResponseDTO.class, "/games/" + hostId);
-        redisSubscriber.subscribeToChannel(startDrawingChannel, StartDrawingResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(haveASayChannel, HaveASayResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(revokeASayChannel, RevokeASayResponseDTO.class, "/games/" + roomId);
-        redisSubscriber.subscribeToChannel(finalRankChannel, FinalRankResponseDTO.class, "/games/" + roomId);
+        adapterInfos.put(roomId, new ArrayList<>());
+        adapterInfos.get(roomId).add(new AdapterInfo(roomKeyPrefix + roomId, EnterRoomResponseDTO.class, "/rooms/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(chatKeyPrefix + roomId, SendChatResponseDTO.class, "/chat/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":start", StartGameResponseDTO.class, "/games/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":explainQueue", ExplainResponseDTO.class, "/games/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":allAnswers", CheckAllAnswersResponseDTO.class, "/games/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":voteEnded", EndVoteResponseDTO.class, "/games/" + hostId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":startDrawing", StartDrawingResponseDTO.class, "/games/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":haveASay", HaveASayResponseDTO.class, "/games/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":revokeASay", RevokeASayResponseDTO.class, "/games/" + roomId));
+        adapterInfos.get(roomId).add(new AdapterInfo(gameKeyPrefix + roomId + ":finalRanks", FinalRankResponseDTO.class, "/games/" + roomId));
+        subscribeChannels(adapterInfos.get(roomId));
+    }
+
+    private void subscribeChannels(List<AdapterInfo> adapterInfos) {
+        for (AdapterInfo adapterInfo : adapterInfos) {
+            redisSubscriber.subscribeToChannel(adapterInfo.messageListenerAdapter, adapterInfo.channel);
+        }
+    }
+
+    class AdapterInfo {
+        MessageListenerAdapter messageListenerAdapter;
+        String channel;
+        String destinationPath;
+
+        AdapterInfo(String channel, Class<?> messageType, String destinationPath) {
+            this.channel = channel;
+            this.destinationPath = destinationPath;
+            this.messageListenerAdapter = new MessageListenerAdapter(
+                    new GenericMessageSubscribe<>(simpMessagingTemplate, objectMapper, messageType, destinationPath), "onMessage");
+        }
     }
 }
