@@ -23,19 +23,6 @@ public class RoomController {
 
     private final RoomService roomService;
 
-    /*
-    @MessageMapping("/create-room")
-    public void createRoom(ChatMessage message) {
-        System.out.println("Received message: " + message); // 디버그용 로그
-        GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
-        RoomMessageListener roomMessageListener = new RoomMessageListener(simpMessagingTemplate, genericJackson2JsonRedisSerializer);
-        MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(roomMessageListener, defaultMethodName);
-        // 메시지를 Redis Pub/Sub 채널로 발행
-        redisMessageListenerContainer.addMessageListener(messageListenerAdapter, new ChannelTopic("stomp-channel-topic"));
-        messagePublisher.publish("stomp-message-channel", message);
-    }
-    */
-
     @PostMapping("/api/rooms")
     public ResponseEntity<RoomResponseDTO> createRoom(@RequestBody RoomRequestDTO roomRequestDTO) {
         RoomResponseDTO roomResponse = roomService.createRoom(roomRequestDTO.hostId());
