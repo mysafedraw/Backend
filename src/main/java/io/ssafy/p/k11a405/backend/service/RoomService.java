@@ -124,6 +124,12 @@ public class RoomService {
         return String.valueOf(stringRedisTemplate.opsForHash().get(key, "hostId"));
     }
 
+    public CheckRoomExistenceResponseDTO isExistingRoom(String roomId) {
+        String roomKey = roomKeyPrefix + roomId;
+        Boolean isExisting = stringRedisTemplate.opsForHash().hasKey(roomKey, "roomId");
+        return new CheckRoomExistenceResponseDTO(isExisting);
+    }
+
     private void subscribeChannelsOnRoom(String roomId, String hostId) {
         String channelName = roomKeyPrefix + roomId;
         String chatChannel = chatKeyPrefix + roomId;

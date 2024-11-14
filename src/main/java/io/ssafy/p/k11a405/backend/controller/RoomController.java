@@ -1,5 +1,6 @@
 package io.ssafy.p.k11a405.backend.controller;
 
+import io.ssafy.p.k11a405.backend.dto.CheckRoomExistenceResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.RoomJoinRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.RoomRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
@@ -8,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,6 +25,12 @@ public class RoomController {
     public ResponseEntity<RoomResponseDTO> createRoom(@RequestBody RoomRequestDTO roomRequestDTO) {
         RoomResponseDTO roomResponse = roomService.createRoom(roomRequestDTO.hostId());
         return ResponseEntity.ok(roomResponse);
+    }
+
+    @GetMapping("/api/rooms/{roomId}")
+    public ResponseEntity<CheckRoomExistenceResponseDTO> isExistingRoom(@PathVariable String roomId) {
+        CheckRoomExistenceResponseDTO checkRoomExistenceResponseDTO = roomService.isExistingRoom(roomId);
+        return ResponseEntity.ok(checkRoomExistenceResponseDTO);
     }
 
     @PostMapping("/api/rooms/join")
