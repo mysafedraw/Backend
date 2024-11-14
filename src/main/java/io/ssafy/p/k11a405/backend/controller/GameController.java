@@ -82,4 +82,9 @@ public class GameController {
     public void findMyAnswerStatus(FindMyAnswerStatusRequestDTO findMyDrawingStatusRequestDTO) {
         answerService.findMyAnswerStatus(findMyDrawingStatusRequestDTO.userId());
     }
+
+    @MessageMapping("/rank")
+    public void findFinalRanks(String roomId) {
+        gameService.findFinalRanks(roomId);
+    }
 }
