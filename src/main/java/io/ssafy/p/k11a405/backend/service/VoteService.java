@@ -1,8 +1,6 @@
 package io.ssafy.p.k11a405.backend.service;
 
-import io.ssafy.p.k11a405.backend.dto.game.EndVoteResponseDTO;
-import io.ssafy.p.k11a405.backend.dto.game.GameAction;
-import io.ssafy.p.k11a405.backend.dto.game.VoteResponseDTO;
+import io.ssafy.p.k11a405.backend.dto.game.*;
 import io.ssafy.p.k11a405.backend.pubsub.GenericMessagePublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -24,6 +22,7 @@ public class VoteService {
 
     private final UserService userService;
     private final RoomService roomService;
+    private final AnswerService answerService;
 
     public void vote(String roomId, boolean isAgreed, String userId) {
         // 방장 아이디 가져오기
@@ -55,6 +54,7 @@ public class VoteService {
         removeFromQueue(roomId, userId);
 
         genericMessagePublisher.publishString(channelName, endVoteResponseDTO);
+        refreshWaitingQueue(roomId);
     }
 
     private VoteResponseDTO calculateVoteResult(List<String> voteResults) {
@@ -90,5 +90,14 @@ public class VoteService {
         explanationQueue.stream().filter(userId -> !userId.equals(targetUserId)).forEach(userId -> {
             stringRedisTemplate.opsForList().rightPush(queueKey, userId);
         });
+    }
+
+    private void refreshWaitingQueue(String roomId) {
+        String queueKey = redisKeyPrefix + roomId + ":explanationQueue";
+        List<String> userIds = stringRedisTemplate.opsForList().range(queueKey, 0, -1);
+        List<AnswerStatusResponseDTO> answerStatuses = userIds.stream().map(answerService::getUserAnswerStatus).toList();
+        ExplainResponseDTO explainResponseDTO = new ExplainResponseDTO(answerStatuses, GameAction.ADD_EXPLAIN_QUEUE);
+        String channelName = redisKeyPrefix + roomId + ":explainQueue";
+        genericMessagePublisher.publishString(channelName, explainResponseDTO);
     }
 }
