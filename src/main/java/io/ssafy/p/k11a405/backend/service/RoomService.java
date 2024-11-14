@@ -37,15 +37,6 @@ public class RoomService {
 
     private final UserService userService;
 
-    // 채팅방 구독 메서드
-    public void subscribeToRoomChannel(String roomId) {
-        String channelName = roomKeyPrefix + roomId;
-        String destinationPath = "/rooms/" + roomId;
-
-        // RedisSubscriber의 메서드로 구독 설정
-        redisSubscriber.subscribeToChannel(channelName, RoomEventMessage.class, destinationPath);
-    }
-
     public RoomResponseDTO createRoom(String ownerId) {
         Random random = new Random(System.currentTimeMillis());
         String roomId = String.valueOf(Math.abs(random.nextLong() % 1000000L));
@@ -56,10 +47,6 @@ public class RoomService {
         stringRedisTemplate.opsForHash().put(roomKey, "hostId", ownerId);
 
         subscribeChannelsOnRoom(roomId, ownerId);
-
-        // 방 정보에 방장 세션 ID 포함
-//        String ownerSessionId = stringRedisTemplate.opsForHash().get("session:user", ownerId).toString();
-//        stringRedisTemplate.opsForHash().put(roomKey, "ownerSessionId", ownerSessionId);
 
         return new RoomResponseDTO(roomId, ownerId, RoomAction.CREATE_ROOM);
     }
