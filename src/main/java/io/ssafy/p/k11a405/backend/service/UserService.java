@@ -35,6 +35,7 @@ public class UserService {
         stringRedisTemplate.opsForHash().put(userKey, nicknameField, nickname);
         stringRedisTemplate.opsForHash().put(userKey, avatarIdField, String.valueOf(avatarId)); // 아바타 id 저장
         stringRedisTemplate.opsForHash().put(userKey, avatarProfileImgField, avatarInfo.profileImg());
+        stringRedisTemplate.opsForHash().put(userKey, scoreField, "0");
 
         return new UserResponseDTO(userId, nickname, avatarInfo.profileImg(), 0); // 생성된 유저 ID 반환
     }
@@ -75,7 +76,7 @@ public class UserService {
     public UserResponseDTO updateAvatar(Integer avatarId, String userId) {
         String userKey = generateUserKey(userId);
         FindAvatarsInfoResponseDTO avatarInfo = avatarService.findAvatarInfo(avatarId);
-        stringRedisTemplate.opsForHash().put(userKey, avatarIdField, String.valueOf(avatarId)); // 아바타 id 저장
+        stringRedisTemplate.opsForHash().put(userKey, avatarProfileImgField, avatarInfo.profileImg());
         return getUserInfoByUserId(userId);
     }
 }
