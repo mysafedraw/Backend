@@ -1,5 +1,6 @@
 package io.ssafy.p.k11a405.backend.controller;
 
+import io.ssafy.p.k11a405.backend.dto.CheckRoomExistenceResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.RoomJoinRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.RoomRequestDTO;
 import io.ssafy.p.k11a405.backend.dto.RoomResponseDTO;
@@ -8,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,23 +21,16 @@ public class RoomController {
 
     private final RoomService roomService;
 
-    /*
-    @MessageMapping("/create-room")
-    public void createRoom(ChatMessage message) {
-        System.out.println("Received message: " + message); // 디버그용 로그
-        GenericJackson2JsonRedisSerializer genericJackson2JsonRedisSerializer = new GenericJackson2JsonRedisSerializer();
-        RoomMessageListener roomMessageListener = new RoomMessageListener(simpMessagingTemplate, genericJackson2JsonRedisSerializer);
-        MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(roomMessageListener, defaultMethodName);
-        // 메시지를 Redis Pub/Sub 채널로 발행
-        redisMessageListenerContainer.addMessageListener(messageListenerAdapter, new ChannelTopic("stomp-channel-topic"));
-        messagePublisher.publish("stomp-message-channel", message);
-    }
-    */
-
     @PostMapping("/api/rooms")
     public ResponseEntity<RoomResponseDTO> createRoom(@RequestBody RoomRequestDTO roomRequestDTO) {
         RoomResponseDTO roomResponse = roomService.createRoom(roomRequestDTO.hostId());
         return ResponseEntity.ok(roomResponse);
+    }
+
+    @GetMapping("/api/rooms/{roomId}")
+    public ResponseEntity<CheckRoomExistenceResponseDTO> isExistingRoom(@PathVariable String roomId) {
+        CheckRoomExistenceResponseDTO checkRoomExistenceResponseDTO = roomService.isExistingRoom(roomId);
+        return ResponseEntity.ok(checkRoomExistenceResponseDTO);
     }
 
     @PostMapping("/api/rooms/join")
@@ -57,5 +48,10 @@ public class RoomController {
     @MessageMapping("/leave")
     public void leaveRoom(RoomJoinRequestDTO roomJoinRequestDTO) {
         roomService.leaveRoom(roomJoinRequestDTO.roomId(), roomJoinRequestDTO.userId());
+    }
+
+    @MessageMapping("/destroy")
+    public void destroyRoom(String roomId) {
+        roomService.destroyRoom(roomId);
     }
 }

@@ -17,9 +17,12 @@ public class UserService {
     private final String avatarIdField = "avatarId";
     private final String nicknameField = "nickname";
     private final String avatarProfileImgField = "avatarProfileImg";
+    private final String scoreField = "score";
+    private final String drawingSrcField = "drawingSrc";
 
     private final StringRedisTemplate stringRedisTemplate;
     private final AvatarService avatarService;
+    private final ImageService imageService;
 
     public UserResponseDTO createUser(String nickname, Integer avatarId) {
         // 고유한 UUID 생성
@@ -33,7 +36,7 @@ public class UserService {
         stringRedisTemplate.opsForHash().put(userKey, avatarIdField, String.valueOf(avatarId)); // 아바타 id 저장
         stringRedisTemplate.opsForHash().put(userKey, avatarProfileImgField, avatarInfo.profileImg());
 
-        return new UserResponseDTO(userId, nickname, avatarInfo.profileImg()); // 생성된 유저 ID 반환
+        return new UserResponseDTO(userId, nickname, avatarInfo.profileImg(), 0); // 생성된 유저 ID 반환
     }
 
     public UserResponseDTO updateNickname(String nickname, String userId) {
@@ -46,7 +49,8 @@ public class UserService {
         String userKey = generateUserKey(userId);
         String nickname = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, nicknameField));
         String profileImg = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, avatarProfileImgField));
-        return new UserResponseDTO(userId, nickname, profileImg);
+        Integer score = Integer.parseInt(String.valueOf(stringRedisTemplate.opsForHash().get(userKey, scoreField)));
+        return new UserResponseDTO(userId, nickname, profileImg, score);
     }
 
     public String generateUserKey(String userId) {
@@ -56,5 +60,22 @@ public class UserService {
     public Set<String> getUserIdsInRoom(String roomId) {
         String roomKey = "rooms:" + roomId + ":users";
         return stringRedisTemplate.opsForZSet().range(roomKey, 0, -1);
+    }
+
+    public void deleteUserDrawings(String roomId) {
+        Set<String> userIdsInRoom = getUserIdsInRoom(roomId);
+        userIdsInRoom.stream().map(this::generateUserKey)
+                .forEach(userKey -> {
+                    String drawingSrc = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, drawingSrcField));
+                    imageService.deleteImageFromS3(drawingSrc);
+                    stringRedisTemplate.opsForHash().delete(userKey, drawingSrcField);
+        });
+    }
+
+    public UserResponseDTO updateAvatar(Integer avatarId, String userId) {
+        String userKey = generateUserKey(userId);
+        FindAvatarsInfoResponseDTO avatarInfo = avatarService.findAvatarInfo(avatarId);
+        stringRedisTemplate.opsForHash().put(userKey, avatarIdField, String.valueOf(avatarId)); // 아바타 id 저장
+        return getUserInfoByUserId(userId);
     }
 }

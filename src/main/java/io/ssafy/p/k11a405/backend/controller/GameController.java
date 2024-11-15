@@ -37,7 +37,7 @@ public class GameController {
         gameService.haveASay(haveASayRequestDTO.roomId(), haveASayRequestDTO.userId());
     }
 
-    @MessageMapping("/games/say-revoke")
+    @MessageMapping("/say-revoke")
     public void revokeASay(RevokeASayRequestDTO revokeASayRequestDTO) {
         gameService.revokeASay(revokeASayRequestDTO.roomId(), revokeASayRequestDTO.userId());
     }
@@ -81,5 +81,10 @@ public class GameController {
     @MessageMapping("/my-drawing")
     public void findMyAnswerStatus(FindMyAnswerStatusRequestDTO findMyDrawingStatusRequestDTO) {
         answerService.findMyAnswerStatus(findMyDrawingStatusRequestDTO.userId());
+    }
+
+    @MessageMapping("/rank")
+    public void findFinalRanks(String roomId) {
+        gameService.findFinalRanks(roomId);
     }
 }

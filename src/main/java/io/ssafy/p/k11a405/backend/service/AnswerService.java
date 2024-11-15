@@ -29,6 +29,7 @@ public class AnswerService {
 
     private final RoomService roomService;
     private final ScenarioService scenarioService;
+    private final UserService userService;
 
     public void checkAnswer(String roomId, String userId, Integer scenarioId, String userAnswer, Integer stageNumber) {
         // 정답 체크
@@ -61,7 +62,9 @@ public class AnswerService {
         Set<String> userIds = stringRedisTemplate.opsForZSet().range(userKey, 0, -1);
         String hostId = roomService.getHostId(roomId);
         List<AnswerStatusResponseDTO> answerStatuses = userIds.stream()
-                .filter(Predicate.not(hostId::equals)).map(this::getUserAnswerStatus).toList();
+                .filter(Predicate.not(hostId::equals))
+                .filter(this::hasDrawing)
+                .map(this::getUserAnswerStatus).toList();
 
         CheckAllAnswersResponseDTO checkAllAnswersResponseDTO = new CheckAllAnswersResponseDTO(answerStatuses, GameAction.CHECK_ALL_ANSWERS);
         String channelName = redisKeyPrefix + roomId + ":allAnswers";
@@ -99,6 +102,12 @@ public class AnswerService {
         AnswerStatusResponseDTO userAnswerStatus = getUserAnswerStatus(userId);
         FindMyAnswerStatusResponseDTO findMyAnswerStatusResponseDTO = new FindMyAnswerStatusResponseDTO(userAnswerStatus, GameAction.MY_DRAWING);
         simpMessagingTemplate.convertAndSend("/games/" + userId, findMyAnswerStatusResponseDTO);
+    }
+
+    private boolean hasDrawing(String userId) {
+        String userKey = userService.generateUserKey(userId);
+        String drawingSrc = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, drawSrcField));
+        return !drawingSrc.equals("null");
     }
 
     private void addScore(String userId) {

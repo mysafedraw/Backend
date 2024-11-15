@@ -12,8 +12,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,6 +109,20 @@ public class GameService {
         genericMessagePublisher.publishString(channelName, startDrawingResponseDTO);
     }
 
+    public void findFinalRanks(String roomId) {
+        Set<String> userIds = userService.getUserIdsInRoom(roomId);
+        String hostId = roomService.getHostId(roomId);
+        List<UserResponseDTO> userInfos = userIds.stream()
+                .filter(Predicate.not(hostId::equals))
+                .map(userService::getUserInfoByUserId)
+                .sorted(Comparator.comparing(UserResponseDTO::score).reversed())
+                .toList();
+        List<UserRankResponseDTO> userRanks = calculateUserRank(userInfos);
+        FinalRankResponseDTO finalRankResponseDTO = new FinalRankResponseDTO(userRanks, GameAction.FINAL_RANK);
+
+        genericMessagePublisher.publishString(redisKeyPrefix + roomId + ":finalRanks", finalRankResponseDTO);
+    }
+
     private boolean correctUser(String userId) {
         String key = "user:" + userId;
         AnswerStatus isCorrect = AnswerStatus.valueOf(String.valueOf(stringRedisTemplate.opsForHash().get(key, isCorrectField)));
@@ -120,5 +137,20 @@ public class GameService {
         keys.add(enqueuedKey);
         keys.add(queueKey);
         stringRedisTemplate.delete(keys);
+        userService.deleteUserDrawings(roomId);
+    }
+
+    private List<UserRankResponseDTO> calculateUserRank(List<UserResponseDTO> userInfos) {
+        List<UserRankResponseDTO> userRanks = new ArrayList<>();
+        int rank = 1;
+        userRanks.add(new UserRankResponseDTO(userInfos.get(0), rank));
+        for (int i = 1; i < userInfos.size(); i++) {
+            if (userInfos.get(i) != userInfos.get(i - 1)) {
+                rank = i + 1;
+            }
+            userRanks.add(new UserRankResponseDTO(userInfos.get(i), rank));
+        }
+
+        return userRanks;
     }
 }
