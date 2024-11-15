@@ -42,6 +42,14 @@ public class ImageService {
         stringRedisTemplate.opsForHash().put(userKey, drawSrcField, drawingSrc);
     }
 
+    public void deleteImageFromS3(String imageSrc) {
+        if (!imageSrc.contains("com/")) {
+            return;
+        }
+        String objectKey = imageSrc.split("com/")[1];
+        amazonS3.deleteObject(bucketName, objectKey);
+    }
+
     private String uploadImage(MultipartFile image, String path) {
         //image 파일 확장자 검사
         this.validateImageFileExtension(image.getOriginalFilename());

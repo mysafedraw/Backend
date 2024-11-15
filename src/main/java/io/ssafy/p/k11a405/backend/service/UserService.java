@@ -18,9 +18,11 @@ public class UserService {
     private final String nicknameField = "nickname";
     private final String avatarProfileImgField = "avatarProfileImg";
     private final String scoreField = "score";
+    private final String drawingSrcField = "drawingSrc";
 
     private final StringRedisTemplate stringRedisTemplate;
     private final AvatarService avatarService;
+    private final ImageService imageService;
 
     public UserResponseDTO createUser(String nickname, Integer avatarId) {
         // 고유한 UUID 생성
@@ -58,5 +60,15 @@ public class UserService {
     public Set<String> getUserIdsInRoom(String roomId) {
         String roomKey = "rooms:" + roomId + ":users";
         return stringRedisTemplate.opsForZSet().range(roomKey, 0, -1);
+    }
+
+    public void deleteUserDrawings(String roomId) {
+        Set<String> userIdsInRoom = getUserIdsInRoom(roomId);
+        userIdsInRoom.stream().map(this::generateUserKey)
+                .forEach(userKey -> {
+                    String drawingSrc = String.valueOf(stringRedisTemplate.opsForHash().get(userKey, drawingSrcField));
+                    imageService.deleteImageFromS3(drawingSrc);
+                    stringRedisTemplate.opsForHash().delete(userKey, drawingSrcField);
+        });
     }
 }

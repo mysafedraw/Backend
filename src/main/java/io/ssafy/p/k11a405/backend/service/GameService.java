@@ -137,6 +137,7 @@ public class GameService {
         keys.add(enqueuedKey);
         keys.add(queueKey);
         stringRedisTemplate.delete(keys);
+        userService.deleteUserDrawings(roomId);
     }
 
     private List<UserRankResponseDTO> calculateUserRank(List<UserResponseDTO> userInfos) {
