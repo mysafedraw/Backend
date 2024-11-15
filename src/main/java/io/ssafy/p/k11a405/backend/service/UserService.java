@@ -71,4 +71,11 @@ public class UserService {
                     stringRedisTemplate.opsForHash().delete(userKey, drawingSrcField);
         });
     }
+
+    public UserResponseDTO updateAvatar(Integer avatarId, String userId) {
+        String userKey = generateUserKey(userId);
+        FindAvatarsInfoResponseDTO avatarInfo = avatarService.findAvatarInfo(avatarId);
+        stringRedisTemplate.opsForHash().put(userKey, avatarIdField, String.valueOf(avatarId)); // 아바타 id 저장
+        return getUserInfoByUserId(userId);
+    }
 }

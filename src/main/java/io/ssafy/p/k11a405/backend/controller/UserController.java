@@ -28,4 +28,11 @@ public class UserController {
         UserResponseDTO userResponseDTO = userService.updateNickname(updateUserRequestDTO.nickname(), updateUserRequestDTO.userId());
         return ResponseEntity.ok(DataResponse.of("닉네임 변경에 성공했습니다.", userResponseDTO));
     }
+
+    @PostMapping("/avatars")
+    public ResponseEntity<DataResponse<UserResponseDTO>> updateAvatars(@RequestBody UpdateUserRequestDTO updateUserRequestDTO) {
+        UserResponseDTO userResponseDTO = userService.updateAvatar(updateUserRequestDTO.avatarId(), updateUserRequestDTO.userId());
+        return ResponseEntity.ok(DataResponse.of("아바타 변경에 성공했습니다.", userResponseDTO));
+
+    }
 }
