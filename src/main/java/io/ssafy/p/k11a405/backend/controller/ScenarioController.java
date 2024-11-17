@@ -1,7 +1,5 @@
 package io.ssafy.p.k11a405.backend.controller;
 
-import io.ssafy.p.k11a405.backend.dto.FindAssetValidationsRequestDTO;
-import io.ssafy.p.k11a405.backend.dto.FindAvatarsResponseDTO;
 import io.ssafy.p.k11a405.backend.dto.FindScenariosResponseDTO;
 import io.ssafy.p.k11a405.backend.global.DataResponse;
 import io.ssafy.p.k11a405.backend.service.ScenarioService;
