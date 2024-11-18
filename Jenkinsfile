@@ -7,7 +7,7 @@ pipeline {
     }
 
     stages {
-        stage('Set GIT_COMMIT') {
+        stage('Set GIT COMMIT SHA') {
             steps {
                 script {
                     // 현재 Git 커밋 SHA를 전역 변수에 저장
@@ -91,7 +91,7 @@ pipeline {
 
                     dir('backend') {
                         sh """
-                        docker build -t 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend:${GIT_COMMIT} .
+                        docker build -t 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend-image:${GIT_COMMIT} .
                         """
                     }
                 }
@@ -115,10 +115,10 @@ pipeline {
                     // 이미지 푸시 (커밋 태그와 latest 태그)
                     dir('backend') {
                         sh """
-                        docker push 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend:${GIT_COMMIT}
-                        docker tag 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend:${GIT_COMMIT} \
-                                  575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend:latest
-                        docker push 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend:latest
+                        docker push 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend-image:${GIT_COMMIT}
+                        docker tag 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend-image:${GIT_COMMIT} \
+                                  575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend-image:latest
+                        docker push 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com/mysafedraw/backend-image:latest
                         """
                     }
                 }
