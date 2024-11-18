@@ -128,9 +128,14 @@ pipeline {
                         sh '''
                         # Git 인증 URL 설정
                         git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/s11-final/S11P31A405.git
+                        # 로컬 변경 사항 임시 저장
+                        git add .
+                        git stash
                         git fetch origin
                         git checkout ${K8S_BRANCH}
                         git pull origin ${K8S_BRANCH}
+                        # 임시 저장된 변경 사항 복원
+                        git stash pop || echo "No stash to apply"
                         '''
                     }
                 }
