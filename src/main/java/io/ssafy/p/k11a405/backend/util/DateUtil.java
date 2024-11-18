@@ -14,5 +14,6 @@ public class DateUtil {
         return LocalTime.now().format(dateTimeFormatter)
                 .replace("AM", "오전")
                 .replace("PM", "오후");
+
     }
 }
