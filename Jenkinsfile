@@ -17,7 +17,7 @@ pipeline {
             }
         }
 
-        stage('application.yml file copy for Test') {
+        stage('yml file copy for Test') {
             steps {
                 script {
                     dir('backend') {
@@ -56,7 +56,7 @@ pipeline {
             }
         }
 
-        stage('application.yml file copy for Prod') {
+        stage('yml file copy for Prod') {
             steps {
                 script {
                     dir('backend') {
@@ -98,16 +98,20 @@ pipeline {
             }
         }
 
+        stage('AWS CLI Login') {
+            steps {
+                withAWS(credentials: 'aws-credentials-id', region: 'ap-northeast-2') {
+                    sh '''
+                    aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com
+                    '''
+                }
+            }
+        }
+
         stage('Push Docker Image to AWS ECR') {
             steps {
                 script {
                     echo "Pushing Docker image with tag: ${GIT_COMMIT} to AWS ECR..."
-
-                    // AWS CLI로 ECR 로그인
-                    sh '''
-                    aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 575108921650.dkr.ecr.ap-northeast-2.amazonaws.com
-                    '''
-                    
                     // 이미지 푸시 (커밋 태그와 latest 태그)
                     dir('backend') {
                         sh """
