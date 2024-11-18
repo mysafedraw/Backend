@@ -35,7 +35,6 @@ public class RoomController {
 
     @PostMapping("/api/rooms/join")
     public ResponseEntity<List<String>> getAllUsersInRoom(@RequestBody RoomJoinRequestDTO roomJoinRequestDTO) {
-//        roomService.addUser(roomJoinRequestDTO.roomId(), roomJoinRequestDTO.userId());
         List<String> users = roomService.getAllUsersInRoom(roomJoinRequestDTO.roomId());
         return ResponseEntity.ok(users);
     }

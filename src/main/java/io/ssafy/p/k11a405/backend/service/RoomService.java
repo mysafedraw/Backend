@@ -115,7 +115,7 @@ public class RoomService {
 
     public CheckRoomExistenceResponseDTO isExistingRoom(String roomId) {
         String roomKey = roomKeyPrefix + roomId;
-        Boolean isExisting = stringRedisTemplate.opsForHash().hasKey(roomKey, "roomId");
+        Boolean isExisting = stringRedisTemplate.hasKey(roomKey);
         return new CheckRoomExistenceResponseDTO(isExisting);
     }
 

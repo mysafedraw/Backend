@@ -45,7 +45,7 @@ dependencies {
 	implementation 'com.amazonaws:aws-java-sdk-s3'//s3
 
 	/* livekit - openvidu */
-	implementation 'io.livekit:livekit-server:0.5.11'
+	implementation 'io.openvidu:openvidu-java-client:2.30.0'
 }
 
 tasks.named('test') {

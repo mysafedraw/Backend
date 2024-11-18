@@ -1,35 +1,43 @@
 package io.ssafy.p.k11a405.backend.service;
 
-import io.livekit.server.AccessToken;
-import io.livekit.server.RoomJoin;
-import io.livekit.server.RoomName;
-import io.ssafy.p.k11a405.backend.dto.CreateAudioTokenResponseDTO;
-import io.ssafy.p.k11a405.backend.dto.RoomAction;
+import io.openvidu.java.client.*;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class AudioService {
 
-    @Value("${livekit.api.key}")
-    private String LIVEKIT_API_KEY;
+    @Value("${openvidu.url}")
+    private String OPENVIDU_URL;
 
-    @Value("${livekit.api.secret}")
-    private String LIVEKIT_API_SECRET;
+    @Value("${openvidu.secret}")
+    private String OPENVIDU_SECRET;
 
-    private final SimpMessagingTemplate messagingTemplate;
+    private OpenVidu openVidu;
 
-    public CreateAudioTokenResponseDTO createToken(String userId, String roomId) {
-        AccessToken accessToken = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
-        accessToken.setName(userId);
-        accessToken.setIdentity(userId);
-        accessToken.addGrants(new RoomJoin(true), new RoomName(roomId));
+    @PostConstruct
+    public void init() {
+        this.openVidu = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
+    }
 
-        String jwtAccessToken = accessToken.toJwt();
-        return new CreateAudioTokenResponseDTO(jwtAccessToken, RoomAction.CREATE_AUDIO_TOKEN);
+    public String initializeSession(Map<String, Object> params) throws OpenViduJavaClientException, OpenViduHttpException {
+        SessionProperties properties = SessionProperties.fromJson(params).build();
+        Session session = openVidu.createSession(properties);
+        return session.getSessionId();
+    }
 
+    public String createConnection(Map<String, Object> params, String sessionId) throws OpenViduJavaClientException, OpenViduHttpException {
+        Session session = openVidu.getActiveSession(sessionId);
+        if (session == null) {
+            return null;
+        }
+        ConnectionProperties properties = ConnectionProperties.fromJson(params).build();
+        Connection connection = session.createConnection(properties);
+        return connection.getToken();
     }
 }
