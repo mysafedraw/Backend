@@ -130,16 +130,15 @@ pipeline {
                 script {
                     echo "Switching to K8S branch..."
                     withCredentials([usernamePassword(credentialsId: '7625e1be-1711-422c-a591-689d805d2f75', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                        sh """
-                        git fetch https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/<group>/<repo>.git
+                        sh '''
+                        git fetch https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/s11-final/S11P31A405.git
                         git checkout ${K8S_BRANCH}
                         git pull origin ${K8S_BRANCH}
-                        """
+                        '''
                     }
                 }
             }
         }
-
 
         stage('Update K8S Deployment File') {
             steps {
