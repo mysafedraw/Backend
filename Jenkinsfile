@@ -129,9 +129,9 @@ pipeline {
             steps {
                 script {
                     echo "Switching to K8S branch..."
-                    withCredentials([usernamePassword(credentialsId: '7625e1be-1711-422c-a591-689d805d2f75', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    withCredentials([string(credentialsId: 'gitlab-access-token', variable: 'GITLAB_TOKEN')]) {
                         sh '''
-                        git fetch https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/s11-final/S11P31A405.git
+                        git fetch https://${GITLAB_TOKEN}@lab.ssafy.com/s11-final/S11P31A405.git
                         git checkout ${K8S_BRANCH}
                         git pull origin ${K8S_BRANCH}
                         '''
