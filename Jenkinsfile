@@ -9,21 +9,12 @@ pipeline {
     }
 
     stages {
-        stage('Set GIT COMMIT SHA') {
-            steps {
-                script {
-                    env.GIT_COMMIT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    echo "Current Git Commit: ${GIT_COMMIT}"
-                }
-            }
-        }
-
         stage('Copy YML File for Test') {
             steps {
                 script {
                     dir('backend') {
-                        withCredentials([file(credentialsId: 'application-yml', variable: 'APPLICATION_YML')]) {
-                            sh 'cp $APPLICATION_YML ./src/main/resources/application.yml'
+                        withCredentials([file(credentialsId: 'test-application-yml', variable: 'TEST_APPLICATION_YML')]) {
+                            sh 'cp $TEST_APPLICATION_YML ./src/main/resources/application.yml'
                         }
                     }
                 }
@@ -81,10 +72,11 @@ pipeline {
         stage('Build Docker Image for Prod') {
             steps {
                 script {
-                    echo "Building Docker image with tag: ${GIT_COMMIT}..."
+                    echo "Building Docker image with tag: ${env.BUILD_NUMBER}..."
                     dir('backend') {
                         sh """
-                        docker build -t ${ECR_REPO}:${GIT_COMMIT} .
+                        docker build -t ${ECR_REPO}:${env.BUILD_NUMBER} .
+                        docker tag ${ECR_REPO}:${env.BUILD_NUMBER} ${ECR_REPO}:latest
                         """
                     }
                 }
@@ -107,8 +99,7 @@ pipeline {
                     echo "Pushing Docker image to ECR..."
                     dir('backend') {
                         sh """
-                        docker push ${ECR_REPO}:${GIT_COMMIT}
-                        docker tag ${ECR_REPO}:${GIT_COMMIT} ${ECR_REPO}:latest
+                        docker push ${ECR_REPO}:${env.BUILD_NUMBER}
                         docker push ${ECR_REPO}:latest
                         """
                     }
@@ -129,22 +120,14 @@ pipeline {
             steps {
                 script {
                     echo "Switching to K8S branch..."
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'gitlab-credentials', 
-                            passwordVariable: 'GIT_PASSWORD', 
-                            usernameVariable: 'GIT_USERNAME'
-                        )
-                    ]) {
+                    withCredentials([usernamePassword(
+                        credentialsId: 'gitlab-credentials', 
+                        passwordVariable: 'GIT_PASSWORD', 
+                        usernameVariable: 'GIT_USERNAME'
+                    )]) {
                         sh '''
                         # Git 인증 URL 설정
                         git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/s11-final/S11P31A405.git
-                        
-                        # 변경 사항 커밋
-                        git add .
-                        git commit -m "Temporary commit to save local changes" || echo "Nothing to commit"
-                        
-                        # Git 작업 수행
                         git fetch origin
                         git checkout ${K8S_BRANCH}
                         git pull origin ${K8S_BRANCH}
@@ -154,14 +137,12 @@ pipeline {
             }
         }
 
-
-
         stage('Update K8S Deployment File') {
             steps {
                 script {
-                    echo "Updating backend-deployment.yaml with new image tag: ${GIT_COMMIT}"
+                    echo "Updating backend-deployment.yaml with new image tag: ${env.BUILD_NUMBER}"
                     sh """
-                    sed -i 's|image: .*|image: ${ECR_REPO}:${GIT_COMMIT}|' k8s/backend/backend-deployment.yaml
+                    sed -i 's|image: .*|image: ${ECR_REPO}:${env.BUILD_NUMBER}|' k8s/backend/backend-deployment.yaml
                     git status
                     """
                 }
@@ -176,7 +157,7 @@ pipeline {
                     git config user.name "Jenkins"
                     git config user.email "jenkins@example.com"
                     git add k8s/backend/backend-deployment.yaml
-                    git commit -m "Update backend image to ${GIT_COMMIT}"
+                    git commit -m "Update backend image to ${env.BUILD_NUMBER}"
                     git push origin ${K8S_BRANCH}
                     """
                 }
