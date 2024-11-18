@@ -131,14 +131,17 @@ pipeline {
                     echo "Switching to K8S branch..."
                     withCredentials([
                         usernamePassword(
-                            credentialsId: 'gitlab-credentials', // 등록된 Credential ID
-                            passwordVariable: 'GIT_PASSWORD',
+                            credentialsId: 'gitlab-credentials', 
+                            passwordVariable: 'GIT_PASSWORD', 
                             usernameVariable: 'GIT_USERNAME'
                         )
                     ]) {
                         sh '''
+                        # Git 인증 URL 설정
+                        git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/s11-final/S11P31A405.git
+                        
                         # Git 작업 수행
-                        git fetch https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/s11-final/S11P31A405.git
+                        git fetch origin
                         git checkout ${K8S_BRANCH}
                         git pull origin ${K8S_BRANCH}
                         '''
@@ -146,6 +149,7 @@ pipeline {
                 }
             }
         }
+
 
 
         stage('Update K8S Deployment File') {
