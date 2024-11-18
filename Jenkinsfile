@@ -140,6 +140,10 @@ pipeline {
                         # Git 인증 URL 설정
                         git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@lab.ssafy.com/s11-final/S11P31A405.git
                         
+                        # 변경 사항 커밋
+                        git add .
+                        git commit -m "Temporary commit to save local changes" || echo "Nothing to commit"
+                        
                         # Git 작업 수행
                         git fetch origin
                         git checkout ${K8S_BRANCH}
