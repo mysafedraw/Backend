@@ -84,7 +84,7 @@ public class GameController {
     }
 
     @MessageMapping("/rank")
-    public void findFinalRanks(String roomId) {
-        gameService.findFinalRanks(roomId);
+    public void findFinalRanks(FindFinalResultRequestDTO findFinalResultRequestDTO) {
+        gameService.findFinalRanks(findFinalResultRequestDTO.roomId());
     }
 }
