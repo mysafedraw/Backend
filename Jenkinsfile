@@ -18,112 +18,112 @@ pipeline {
             }
         }
 
-        // stage('Copy YML File for Test') {
-        //     steps {
-        //         script {
-        //             dir('backend') {
-        //                 withCredentials([file(credentialsId: 'application-yml', variable: 'APPLICATION_YML')]) {
-        //                     sh 'cp $APPLICATION_YML ./src/main/resources/application.yml'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Copy YML File for Test') {
+            steps {
+                script {
+                    dir('backend') {
+                        withCredentials([file(credentialsId: 'application-yml', variable: 'APPLICATION_YML')]) {
+                            sh 'cp $APPLICATION_YML ./src/main/resources/application.yml'
+                        }
+                    }
+                }
+            }
+        }
 
-        // stage('Build Spring Boot App for Test') {
-        //     steps {
-        //         script {
-        //             docker.image('eclipse-temurin:17-jdk-alpine').inside {
-        //                 dir('backend') {
-        //                     sh 'chmod +x gradlew' // 실행 권한 부여
-        //                     sh './gradlew clean build --stacktrace -x test'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Build Spring Boot App for Test') {
+            steps {
+                script {
+                    docker.image('eclipse-temurin:17-jdk-alpine').inside {
+                        dir('backend') {
+                            sh 'chmod +x gradlew' // 실행 권한 부여
+                            sh './gradlew clean build --stacktrace -x test'
+                        }
+                    }
+                }
+            }
+        }
 
-        // stage('Deploy with Docker Compose for Test') {
-        //     steps {
-        //         script {
-        //             dir('backend') {
-        //                 sh 'docker-compose up --build -d'
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Deploy with Docker Compose for Test') {
+            steps {
+                script {
+                    dir('backend') {
+                        sh 'docker-compose up --build -d'
+                    }
+                }
+            }
+        }
 
-        // stage('Copy YML File for Prod') {
-        //     steps {
-        //         script {
-        //             dir('backend') {
-        //                 withCredentials([file(credentialsId: 'prod-application-yml', variable: 'PROD_APPLICATION_YML')]) {
-        //                     sh 'cp -f $PROD_APPLICATION_YML ./src/main/resources/application.yml'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Copy YML File for Prod') {
+            steps {
+                script {
+                    dir('backend') {
+                        withCredentials([file(credentialsId: 'prod-application-yml', variable: 'PROD_APPLICATION_YML')]) {
+                            sh 'cp -f $PROD_APPLICATION_YML ./src/main/resources/application.yml'
+                        }
+                    }
+                }
+            }
+        }
 
-        // stage('Build Spring Boot App for Prod') {
-        //     steps {
-        //         script {
-        //             docker.image('eclipse-temurin:17-jdk-alpine').inside {
-        //                 dir('backend') {
-        //                     sh 'chmod +x gradlew' // 실행 권한 부여
-        //                     sh './gradlew clean build --stacktrace -x test'
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Build Spring Boot App for Prod') {
+            steps {
+                script {
+                    docker.image('eclipse-temurin:17-jdk-alpine').inside {
+                        dir('backend') {
+                            sh 'chmod +x gradlew' // 실행 권한 부여
+                            sh './gradlew clean build --stacktrace -x test'
+                        }
+                    }
+                }
+            }
+        }
 
-        // stage('Build Docker Image for Prod') {
-        //     steps {
-        //         script {
-        //             echo "Building Docker image with tag: ${GIT_COMMIT}..."
-        //             dir('backend') {
-        //                 sh """
-        //                 docker build -t ${ECR_REPO}:${GIT_COMMIT} .
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Build Docker Image for Prod') {
+            steps {
+                script {
+                    echo "Building Docker image with tag: ${GIT_COMMIT}..."
+                    dir('backend') {
+                        sh """
+                        docker build -t ${ECR_REPO}:${GIT_COMMIT} .
+                        """
+                    }
+                }
+            }
+        }
 
-        // stage('AWS CLI Login') {
-        //     steps {
-        //         withAWS(credentials: CREDENTIALS_ID, region: AWS_REGION) {
-        //             sh """
-        //             aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
-        //             """
-        //         }
-        //     }
-        // }
+        stage('AWS CLI Login') {
+            steps {
+                withAWS(credentials: CREDENTIALS_ID, region: AWS_REGION) {
+                    sh """
+                    aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO}
+                    """
+                }
+            }
+        }
 
-        // stage('Push Docker Image to AWS ECR') {
-        //     steps {
-        //         script {
-        //             echo "Pushing Docker image to ECR..."
-        //             dir('backend') {
-        //                 sh """
-        //                 docker push ${ECR_REPO}:${GIT_COMMIT}
-        //                 docker tag ${ECR_REPO}:${GIT_COMMIT} ${ECR_REPO}:latest
-        //                 docker push ${ECR_REPO}:latest
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Push Docker Image to AWS ECR') {
+            steps {
+                script {
+                    echo "Pushing Docker image to ECR..."
+                    dir('backend') {
+                        sh """
+                        docker push ${ECR_REPO}:${GIT_COMMIT}
+                        docker tag ${ECR_REPO}:${GIT_COMMIT} ${ECR_REPO}:latest
+                        docker push ${ECR_REPO}:latest
+                        """
+                    }
+                }
+            }
+        }
 
-        // stage('Clean Up Docker Images') {
-        //     steps {
-        //         script {
-        //             echo "Cleaning up Docker images..."
-        //             sh 'docker image prune -f'
-        //         }
-        //     }
-        // }
+        stage('Clean Up Docker Images') {
+            steps {
+                script {
+                    echo "Cleaning up Docker images..."
+                    sh 'docker image prune -f'
+                }
+            }
+        }
 
         stage('Switch to K8S Branch') {
             steps {
