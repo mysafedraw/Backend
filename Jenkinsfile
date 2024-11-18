@@ -35,6 +35,7 @@ pipeline {
                 script {
                     docker.image('eclipse-temurin:17-jdk-alpine').inside {
                         dir('backend') {
+                            sh 'chmod +x gradlew' // 실행 권한 부여
                             sh './gradlew clean build --stacktrace -x test'
                         }
                     }
@@ -69,6 +70,7 @@ pipeline {
                 script {
                     docker.image('eclipse-temurin:17-jdk-alpine').inside {
                         dir('backend') {
+                            sh 'chmod +x gradlew' // 실행 권한 부여
                             sh './gradlew clean build --stacktrace -x test'
                         }
                     }
